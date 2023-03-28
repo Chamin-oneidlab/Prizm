@@ -11,7 +11,7 @@ enum _HighlightTextType { text }
 
 class PlayInfo extends StatefulWidget {
   
-  final String title;
+  final String title; // 값들을 위젯으로 넘김
   final String image;
   final String artist;
   final String song_id;
@@ -19,7 +19,7 @@ class PlayInfo extends StatefulWidget {
 
   const PlayInfo({
     Key? key,
-    required this.title,
+    required this.title, // key에 담아서 사용
     required this.image,
     required this.artist,
     required this.song_id,
@@ -34,7 +34,7 @@ class PlayInfo extends StatefulWidget {
 
 class _PlayInfo extends State<PlayInfo> {
 
-  late Timer timer = Timer(const Duration(seconds: 6), () { // 2초동안 데이터 받아오고 없으면 검색기록 없다는 메세지로 넘김
+  late Timer timer = Timer(const Duration(seconds: 6), () { // n초동안 데이터 받아오고 없으면 검색기록 없다는 메세지로 넘김
     if(!mounted) return;
     setState(() {});
   });

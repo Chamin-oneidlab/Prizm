@@ -53,7 +53,7 @@ class _Home extends State<Home> {
   late TextSpan _textSpan_watch = const TextSpan(children: [
     TextSpan(text: '지금 이 곡을 찾으려면 \n', style: TextStyle(fontSize: 10, color: Colors.black)),
     TextSpan(
-        text: '프리즘 ',
+        text: '프리즘',
         style: TextStyle(
             color: Color.fromRGBO(43, 226, 193, 1),
             fontSize: 10,
@@ -184,7 +184,7 @@ class _Home extends State<Home> {
                                       NetworkToast();
                                       return;
                                     } else if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
-                                      // _vmidc.start();
+                                      _vmidc.start(); //인식 시작하는 부분
                                       await MyApp.analytics.logEvent(name: 'vmidc_start');
                                       if(!mounted){
                                         return;
