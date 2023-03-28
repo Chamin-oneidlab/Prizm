@@ -36,7 +36,8 @@ class _Home extends State<Home> {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
-  final double _size = 220;
+  final double _size = 300;
+  final double watch_size = 100;
 
   final VMIDC _vmidc = VMIDC();
   final _ctrl = StreamController<List>();
@@ -46,10 +47,22 @@ class _Home extends State<Home> {
 
   late var settingIcon = ImageIcon(Image.asset('assets/settings.png').image);
 
-
   /*
    * 하단 RichText 에서 삼항연산자로 활용하기위해 TextSpan 미리 정의
    */
+  late TextSpan _textSpan_watch = const TextSpan(children: [
+    TextSpan(text: '지금 이 곡을 찾으려면 \n', style: TextStyle(fontSize: 10, color: Colors.black)),
+    TextSpan(
+        text: '프리즘 ',
+        style: TextStyle(
+            color: Color.fromRGBO(43, 226, 193, 1),
+            fontSize: 10,
+            fontWeight: FontWeight.bold
+        )
+    ),
+    TextSpan(text: '을 눌러주세요!', style: TextStyle(fontSize: 10, color: Colors.black)),
+  ]);
+
   late TextSpan _textSpan_light = const TextSpan(children: [
     TextSpan(text: '지금 이 곡을 찾으려면 ', style: TextStyle(fontSize: 17, color: Colors.black)),
     TextSpan(
@@ -122,7 +135,99 @@ class _Home extends State<Home> {
         onWillPop: () async {
           return _onBackKey();
         },
-        child: Scaffold(
+        child: MyApp.isWatch
+            ?Container(
+          // height: double.infinity,
+          //   width: double.infinity, //
+            color: const Color.fromRGBO(244, 245, 247, 1),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 10),
+                      child: RichText(
+                          text: _textSpan_watch
+                      ),
+                    )
+                ),
+                Container(
+                  // margin: EdgeInsets.only(top: 30),
+                  //   height: c_height,
+                    // width: double.infn b inity,
+                    decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage('assets/BG_light.gif'),
+                          colorFilter: _background,
+                          fit: BoxFit.fill,
+                        )
+                    ),
+                    child: Center(
+                        child: Column(
+                            children: <Widget>[
+                              IconButton(
+                                  icon:Image.asset('assets/_prizm.png'),
+                                  iconSize: watch_size,
+                                  onPressed: () async {
+                                    var status = await Permission.microphone.status;
+                                    if (status == PermissionStatus.permanentlyDenied) {
+                                      PermissionToast();
+                                      Permission.microphone.request();
+                                      return;
+                                    } else if (status == PermissionStatus.denied) {
+                                      requestMicPermission(context);
+                                      Permission.microphone.request();
+                                      return;
+                                    }
+
+                                    if (_connectionStatus.endsWith('none') == true) {
+                                      NetworkToast();
+                                      return;
+                                    } else if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
+                                      // _vmidc.start();
+                                      await MyApp.analytics.logEvent(name: 'vmidc_start');
+                                      if(!mounted){
+                                        return;
+                                      }
+                                      setState(() {
+                                        // settingIcon = ImageIcon(Image.asset('assets/settings.png').image, color: Colors.transparent);
+                                        _textSpan_watch = const TextSpan(
+                                          text: '노래 분석중',
+                                          style: TextStyle(
+                                              color: Color.fromRGBO(43, 226, 193, 1),
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold
+                                          ),
+                                        );
+                                        _background = const ColorFilter.mode(Colors.transparent, BlendMode.color);
+                                      });
+                                      if (_vmidc.isRunning() == true) {
+                                        _vmidc.stop();
+                                        Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
+                                      }
+                                    }
+                                  }
+                              ),
+                            ]
+                        )
+                    )
+                ),
+              ],
+            )
+        )
+        /*
+        *
+        *
+        *
+        *
+        *       Watch
+        *
+        *
+        *
+        *
+        *
+        * */
+            :Scaffold(
           appBar: AppBar(
             backgroundColor: isDarkMode ? const Color.fromRGBO(47, 47, 47, 1) : const Color.fromRGBO(244, 245, 247, 1),
             centerTitle: true,

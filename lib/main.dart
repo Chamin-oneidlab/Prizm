@@ -73,6 +73,7 @@ class MyApp extends StatelessWidget {
   static var ranks;
   static var privacy;
   static var terms;
+  static var isWatch;
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +116,7 @@ class _TabPageState extends State<TabPage> {
   var deviceIdentifier = 'unknown';
   var deviceData;
   var _deviceData;
+  var deviceDataHeight;
 
   Future<void> remoteconfig() async {
     final FirebaseRemoteConfig remoteConfig = await FirebaseRemoteConfig.instance;
@@ -163,6 +165,8 @@ class _TabPageState extends State<TabPage> {
       AndroidDeviceInfo androidDevice = await deviceInfoPlugin.androidInfo;
 
       deviceData = androidDevice.displayMetrics.widthPx; //화면 widthPx
+      deviceDataHeight = androidDevice.displayMetrics.heightPx; //double로 받아옴
+      deviceDataHeight<1500? MyApp.isWatch = true:MyApp.isWatch = false;
     } else if (Platform.isIOS) {
       var iosInfo = await deviceInfoPlugin.iosInfo;
       deviceIdentifier = iosInfo.identifierForVendor!;
@@ -329,7 +333,8 @@ class _TabPageState extends State<TabPage> {
           body: buildPageView(),
           bottomNavigationBar: StyleProvider(
               style: isDarkMode ? Style_dark() : Style(),
-              child: ConvexAppBar(
+              child: MyApp.isWatch?SizedBox.shrink():
+              ConvexAppBar(
                 items: [
                   TabItem(
                     icon: Image.asset('assets/history.png'),
