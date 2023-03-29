@@ -68,6 +68,7 @@ dependencies:
   url_launcher: ^6.1.7
   firebase_core: ^2.4.1
   firebase_remote_config: ^3.0.9
+  path_provider: ^2.0.14
   package_info_plus: ^3.0.2
   wave: ^0.2.2
 #  firebase: ^9.0.3

@@ -8,6 +8,7 @@ import 'package:http/http.dart';
 import 'package:material_color_generator/material_color_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info/package_info.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:platform_device_id/platform_device_id.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yaml/yaml.dart';
@@ -423,7 +424,7 @@ class _Settings extends State<Settings> {
                                         SizedBox(
                                             height: c_height * 0.115,
                                             child: const Center(
-                                                child: Text('검색내역을 삭제하시겠습니까?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18))
+                                                child: Text('임시파일을 삭제하시겠습니까?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18))
                                             )
                                         ),
                                         Container(
@@ -477,27 +478,16 @@ class _Settings extends State<Settings> {
                                                         _deviceId = await PlatformDeviceId.getDeviceId;
                                                         uid = _deviceId!;
                                                         try {
-                                                          /**
-                                                           * history 가져오는 json과 같지만 id값 없이 uid만 가지고 전체삭제처리
-                                                           * url 관련 문제가 있거나 문의사항 있을때는 임차장님께 문의
-                                                           */
-                                                          Response response = await http.get(Uri.parse('http://${MyApp.history}?uid=$uid&proc=del'));
-                                                          if (response.statusCode == 200) {
-                                                            showToast();
-                                                          } else {
-                                                            failToast();
-                                                            NetworkToast();
-                                                            throw "검색내역 삭제 실패";
-                                                          }
+                                                          final cacheDir = await getTemporaryDirectory();
+                                                          final appDir = await getApplicationSupportDirectory();
+                                                          if (cacheDir.existsSync()) cacheDir.deleteSync(recursive: true);
+                                                          if(appDir.existsSync())appDir.deleteSync(recursive: true);
                                                           setState(() {
                                                             Navigator.pop(context);
                                                           });
+                                                          imsiToast();
                                                         } catch (e) {
-                                                          failToast();
-                                                          NetworkToast();
-                                                          setState(() {
-                                                            Navigator.pop(context);
-                                                          });
+                                                          imsiFailToast();
                                                           rethrow;
                                                         }
                                                       },
@@ -526,7 +516,7 @@ class _Settings extends State<Settings> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('검색내역 삭제', style: TextStyle(fontSize: 17, color: isDarkMode ? Colors.white : Colors.black)),
+                          Text('임시파일 삭제', style: TextStyle(fontSize: 17, color: isDarkMode ? Colors.white : Colors.black)),
                           Align(child: Image.asset('assets/move.png', width: 10))
                         ],
                       ),
