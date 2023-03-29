@@ -37,7 +37,7 @@ class _Home extends State<Home> {
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   final double _size = 300;
-  final double watch_size = 100;
+  final double watch_size = 150;
 
   final VMIDC _vmidc = VMIDC();
   final _ctrl = StreamController<List>();
@@ -50,18 +50,6 @@ class _Home extends State<Home> {
   /*
    * 하단 RichText 에서 삼항연산자로 활용하기위해 TextSpan 미리 정의
    */
-  late TextSpan _textSpan_watch = const TextSpan(children: [
-    TextSpan(text: '지금 이 곡을 찾으려면 \n', style: TextStyle(fontSize: 10, color: Colors.black)),
-    TextSpan(
-        text: '프리즘',
-        style: TextStyle(
-            color: Color.fromRGBO(43, 226, 193, 1),
-            fontSize: 10,
-            fontWeight: FontWeight.bold
-        )
-    ),
-    TextSpan(text: '을 눌러주세요!', style: TextStyle(fontSize: 10, color: Colors.black)),
-  ]);
 
   late TextSpan _textSpan_light = const TextSpan(children: [
     TextSpan(text: '지금 이 곡을 찾으려면 ', style: TextStyle(fontSize: 17, color: Colors.black)),
@@ -143,29 +131,24 @@ class _Home extends State<Home> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Center(
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      child: RichText(
-                          text: _textSpan_watch
-                      ),
-                    )
-                ),
                 Container(
                   // margin: EdgeInsets.only(top: 30),
                   //   height: c_height,
                     // width: double.infn b inity,
+                    padding: EdgeInsets.only(bottom: 40),
                     decoration: BoxDecoration(
                         image: DecorationImage(
                           image: AssetImage('assets/BG_light.gif'),
                           colorFilter: _background,
-                          fit: BoxFit.fill,
+                          // fit: BoxFit.fill,
+                          alignment: const Alignment(0 , 3)
                         )
                     ),
                     child: Center(
                         child: Column(
                             children: <Widget>[
                               IconButton(
+                                padding: EdgeInsets.only(top: 30),
                                   icon:Image.asset('assets/_prizm.png'),
                                   iconSize: watch_size,
                                   onPressed: () async {
@@ -191,14 +174,6 @@ class _Home extends State<Home> {
                                       }
                                       setState(() {
                                         // settingIcon = ImageIcon(Image.asset('assets/settings.png').image, color: Colors.transparent);
-                                        _textSpan_watch = const TextSpan(
-                                          text: '노래 분석중',
-                                          style: TextStyle(
-                                              color: Color.fromRGBO(43, 226, 193, 1),
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold
-                                          ),
-                                        );
                                         _background = const ColorFilter.mode(Colors.transparent, BlendMode.color);
                                       });
                                       if (_vmidc.isRunning() == true) {
@@ -360,6 +335,7 @@ class _Home extends State<Home> {
   }
 
   Future<bool> _onBackKey() async {
+    if(MyApp.isWatch) return false;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     double c_width = MediaQuery.of(context).size.width;
     return await showDialog(

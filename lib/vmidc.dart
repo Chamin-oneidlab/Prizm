@@ -10,6 +10,7 @@ import 'package:flutter_sound_lite/flutter_sound.dart';
 import 'Search_Result.dart';
 import 'package:logger/logger.dart';
 import 'Notfound_bottom.dart';
+import 'main.dart';
 import 'wavbuf.dart';
 
 
@@ -126,7 +127,8 @@ class VMIDC {
     } else {
       print('NOT FOUND');
       HapticFeedback.vibrate();
-      navigatorState.currentState?.push(MaterialPageRoute(builder: (context) => Notfound_Bottom()));
+      // navigatorState.currentState?.push(MaterialPageRoute(builder: (context) => Notfound_Bottom()));
+      navigatorState.currentState?.push(MaterialPageRoute(builder: (context) => TabPage()));
     }
     print('vmid.stop()');
     await _recorder.stopRecorder();

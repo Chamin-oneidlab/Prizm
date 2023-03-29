@@ -260,6 +260,7 @@ class _TabPageState extends State<TabPage> {
 /*-----------------------------------------------------------------------------------------*/
 
   final List _pages = [const History(), const Home(), const Chart()];
+
   // final List _pages = [const Result(id: '',), Home(), Chart()];   // emulator에서 result화면 수정시 History 대신 Result 넣고 수정
 
   List url = [];
@@ -284,9 +285,9 @@ class _TabPageState extends State<TabPage> {
 
   @override
   void initState() {
+    initPlatformState();
     remoteconfig();
     fetchData();
-    initPlatformState();
     super.initState();
   }
 
@@ -298,7 +299,7 @@ class _TabPageState extends State<TabPage> {
   Widget buildPageView() {
     return PageView(
       controller: pageController,
-      children: <Widget>[_pages[0], _pages[1], _pages[2]],
+      children: MyApp.isWatch?<Widget>[_pages[1]]:<Widget>[_pages[0], _pages[1], _pages[2]],
     );
   }
 
