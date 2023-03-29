@@ -802,3 +802,20 @@ void failToast() {
       gravity: ToastGravity.CENTER
   );
 }
+void imsiToast() {
+  Fluttertoast.showToast(
+      msg: '임시파일 삭제 완료',
+      backgroundColor: Colors.grey,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.CENTER
+  );
+}
+
+void imsiFailToast() {
+  Fluttertoast.showToast(
+      msg: '임시파일 삭제 실패',
+      backgroundColor: Colors.grey,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.CENTER
+  );
+}
