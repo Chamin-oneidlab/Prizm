@@ -118,7 +118,6 @@ class _Home extends State<Home> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTransParents = settingIcon.color == const Color(0x00000000);  // Setting Icon 색에 따라 leading Icon 투명화
     final isPad = c_width > 550;
-    final isFlip = c_height > 800;
     return WillPopScope(
         onWillPop: () async {
           return _onBackKey();
@@ -255,7 +254,7 @@ class _Home extends State<Home> {
                           : BoxDecoration(
                               image: DecorationImage(
                                   image: AssetImage(isDarkMode ? ('assets/BG_dark.gif') : ('assets/BG_light.gif')),
-                                  alignment: isFlip ? const Alignment(0, 1) : const Alignment(0, 1),
+                                  alignment: const Alignment(0, 1),
                                   colorFilter: _background
                               )
                         ),

@@ -199,7 +199,7 @@ class _PlayInfo extends State<PlayInfo> {
                         child: Column(
                           children: [
                             SizedBox(
-                                height: c_height * 0.4,
+                                height: c_height * 0.421,
                                 child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -227,7 +227,7 @@ class _PlayInfo extends State<PlayInfo> {
                                 )
                             ),
                             SizedBox(
-                                height: c_height * 0.40,
+                                height: c_height * 0.42,
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
