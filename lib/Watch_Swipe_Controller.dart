@@ -1,23 +1,71 @@
+import 'package:device_info_plus/device_info_plus.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
-
+import 'package:flutter/services.dart';
+import 'package:platform_device_id/platform_device_id.dart';
 import 'Home.dart';
+import 'Watch_ReSearch.dart';
 import 'Watch_Search_Result.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class Watch_Result_Swipe extends StatefulWidget {
   final String id;
 
-  const Watch_Result_Swipe({Key? key,required this.id}) : super(key: key);
+  const Watch_Result_Swipe({Key? key, required this.id}) : super(key: key);
 
   @override
   State<Watch_Result_Swipe> createState() => _Watch_Result_SwipeState();
 }
 
 class _Watch_Result_SwipeState extends State<Watch_Result_Swipe> {
+  late List _pages = [];
+  var maps;
+  void fetchData() async {
+    if (!mounted) {
+      return;
+    }
+    String? uid;
+    var deviceInfoPlugin = DeviceInfoPlugin();
+    try {
+      if (Platform.isAndroid) {
+        uid = await PlatformDeviceId.getDeviceId;
+        print('uid >> $uid');
+      } else if (Platform.isIOS) {
+        var iosInfo = await deviceInfoPlugin.iosInfo;
+        uid = iosInfo.identifierForVendor!;
+      }
+    } on PlatformException {
+      uid = 'Failed to get Id';
+      rethrow;
+    }
+
+    try {
+      http.Response response = await http.get(
+          Uri.parse('http://dev.przm.kr/przm_api/get_song_search/json?id=WA0632182001001&uid=d99df16f4105e7bd7'));
+      // Uri.parse('http://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
+      String jsonData = response.body;
+      Map<String, dynamic> map = jsonDecode(jsonData);
+
+      maps = map;
+      setState(() {});
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  void initState() {
+    _pages = [ Watch_Result(id: widget.id), Watch_ReSurch()];
+    fetchData();
+    super.initState();
+  }
+
   int _selectedIndex = 0; // 처음에 나올 화면 지정
-  final List _pages = [const Watch_Result(id: Widget.id), Home()];
+
 
   PageController pageController = PageController(
-    initialPage: 1,
+    initialPage: 0,
   );
 
 
@@ -41,8 +89,32 @@ class _Watch_Result_SwipeState extends State<Watch_Result_Swipe> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: buildPageView(),
+    double c_height = MediaQuery.of(context).size.height; // 화면상의 전체 높이
+    double c_width = MediaQuery.of(context).size.width; // 화면상의 전치 너비
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          Container(
+              child: Image.network(
+                '${maps['IMAGE']}',
+                height: c_height,
+                width: c_width,
+                fit: BoxFit.fill,
+
+                errorBuilder: (context, error, stackTrace) {
+                  return SizedBox(
+                    child: Image.asset(
+                      'assets/no_image.png',
+                      height: c_height,
+                      fit: BoxFit.fill,
+                    ),
+                  );
+                },
+              )),
+          buildPageView(),
+        ],
+      ),
     );
   }
 }

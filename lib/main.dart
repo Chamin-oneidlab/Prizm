@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:Prizm/Watch_Search_Result.dart';
+import 'package:Prizm/Watch_Swipe_Controller.dart';
 import 'package:Prizm/firebase_options.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
@@ -261,8 +262,7 @@ class _TabPageState extends State<TabPage> {
 /*-----------------------------------------------------------------------------------------*/
 
   // final List _pages = [const History(), const Home(), const Chart()]; // Default
-
-  final List _pages = [Home(),const Watch_Result(id: ''), Chart()]; // Watch_Result로 바로 갈 때 사용 (테스트)
+  final List _pages = [Home(),const Watch_Result_Swipe(id: ''), Chart()]; // Watch_Result로 바로 갈 때 사용 (테스트)
   // final List _pages = [const Result(id: '',), Home(), Chart()];   // emulator에서 result화면 수정시 History 대신 Result 넣고 수정 (테스트)
 
 

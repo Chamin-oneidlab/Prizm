@@ -162,11 +162,13 @@ class _Home extends State<Home> {
                                       return;
                                     }
 
-                                    // if (_connectionStatus.endsWith('none') == true) {
-                                    //   NetworkToast();
-                                    //   return;
-                                    // } else if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
-                                    if (await Permission.microphone.status.isGranted) {
+                                    if (_connectionStatus.endsWith('none') == true) {
+                                      NetworkToast();
+                                      return;
+                                    } else
+                                      if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
+                                    // if (await Permission.microphone.status.isGranted) {  << 네트워크 토스트 계속 뜰 경우 위에 다 주석
+                                      print('status >>> ${_connectionStatus.endsWith('none')}');
                                       _vmidc.start(); //인식 시작하는 부분
                                       await MyApp.analytics.logEvent(name: 'vmidc_start');
                                       if(!mounted){
@@ -292,7 +294,6 @@ class _Home extends State<Home> {
                                     // } else
                                     //   if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
                                     if (await Permission.microphone.status.isGranted) {
-                                      print('connection >>>> ${_connectionStatus.toString()}');
                                       _vmidc.start();
                                       await MyApp.analytics.logEvent(name: 'vmidc_start');
                                       if(!mounted){
