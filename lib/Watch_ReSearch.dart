@@ -27,7 +27,6 @@ class _Watch_ReSurchState extends State<Watch_ReSurch> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                  margin: const EdgeInsets.only(bottom: 10),
                   child: Text(
                     '다시 검색하기',
                     style: TextStyle(
@@ -38,6 +37,7 @@ class _Watch_ReSurchState extends State<Watch_ReSurch> {
                   ),
                 ),
                 Container(
+                  margin: const EdgeInsets.only(bottom: 10),
                   child: Image.asset(
                     'assets/splash_image/_splash_logo.png', width: 30,),
                 ),
