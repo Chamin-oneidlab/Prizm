@@ -20,7 +20,9 @@ class _Watch_ReSurchState extends State<Watch_ReSurch> {
               child: Container(
                 color: Colors.black,
               ),
-
+            ),
+            Container(
+              child: Image.asset('assets/splash_image/_splash_logo.png', width: 30,),
             )
           ],
         ),

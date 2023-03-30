@@ -104,6 +104,7 @@ flutter:
   assets:
     - assets/
     - pubspec.yaml
+    - assets/splash_image/
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
