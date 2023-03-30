@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:Prizm/Watch_Search_Result.dart';
 import 'package:Prizm/firebase_options.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
@@ -146,10 +147,10 @@ class _TabPageState extends State<TabPage> {
      *  평소에는 인앱 기본값 으로 설정해놔야 걸리지 않고 넘어감
      */
 
-    MyApp.appVersion = appVersion;
-    if (appVersion != packageVersion) {
-      showDefaultDialog();
-    }
+    // MyApp.appVersion = appVersion; //TODO:: 이거 풀어야함
+    // if (appVersion != packageVersion) {
+    //   showDefaultDialog();
+    // }
   }
   
   Future<void> initPlatformState() async {
@@ -259,9 +260,11 @@ class _TabPageState extends State<TabPage> {
 
 /*-----------------------------------------------------------------------------------------*/
 
-  final List _pages = [const History(), const Home(), const Chart()];
+  // final List _pages = [const History(), const Home(), const Chart()]; // Default
 
-  // final List _pages = [const Result(id: '',), Home(), Chart()];   // emulator에서 result화면 수정시 History 대신 Result 넣고 수정
+  final List _pages = [Home(),const Watch_Result(id: ''), Chart()]; // Watch_Result로 바로 갈 때 사용 (테스트)
+  // final List _pages = [const Result(id: '',), Home(), Chart()];   // emulator에서 result화면 수정시 History 대신 Result 넣고 수정 (테스트)
+
 
   List url = [];
 

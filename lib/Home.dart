@@ -36,7 +36,7 @@ class _Home extends State<Home> {
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
-  final double _size = 300;
+  final double _size = 220;
   final double watch_size = 150;
 
   final VMIDC _vmidc = VMIDC();
@@ -162,10 +162,11 @@ class _Home extends State<Home> {
                                       return;
                                     }
 
-                                    if (_connectionStatus.endsWith('none') == true) {
-                                      NetworkToast();
-                                      return;
-                                    } else if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
+                                    // if (_connectionStatus.endsWith('none') == true) {
+                                    //   NetworkToast();
+                                    //   return;
+                                    // } else if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
+                                    if (await Permission.microphone.status.isGranted) {
                                       _vmidc.start(); //인식 시작하는 부분
                                       await MyApp.analytics.logEvent(name: 'vmidc_start');
                                       if(!mounted){
@@ -285,10 +286,13 @@ class _Home extends State<Home> {
                                       return;
                                     }
 
-                                    if (_connectionStatus.endsWith('none') == true) {
-                                      NetworkToast();
-                                      return;
-                                    } else if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
+                                    // if (_connectionStatus.endsWith('none') == true) {
+                                    //   NetworkToast();
+                                    //   return;
+                                    // } else
+                                    //   if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
+                                    if (await Permission.microphone.status.isGranted) {
+                                      print('connection >>>> ${_connectionStatus.toString()}');
                                       _vmidc.start();
                                       await MyApp.analytics.logEvent(name: 'vmidc_start');
                                       if(!mounted){

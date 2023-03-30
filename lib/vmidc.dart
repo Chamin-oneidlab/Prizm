@@ -3,6 +3,8 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:Prizm/Watch_Search_Result.dart';
+import 'package:Prizm/Watch_Swipe_Controller.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -123,7 +125,8 @@ class VMIDC {
       // String id = _id!;
       HapticFeedback.vibrate(); //검색 완료시 진동 현재 Android만
       navigatorState.currentState?.push(  //얻어온 context 로 id값 가지고 push
-          MaterialPageRoute(builder: (context) => Result(id: _id!)));
+        MaterialPageRoute(builder: (context) => MyApp.isWatch?Watch_Result(id: _id!):Result(id: _id!))); //워치인지 아닌지 판별 후 Result Page를 다르게 보내야 함
+
     } else {
       print('NOT FOUND');
       HapticFeedback.vibrate();
