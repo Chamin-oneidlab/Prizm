@@ -12,12 +12,37 @@ class _Watch_ReSurchState extends State<Watch_ReSurch> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      alignment: Alignment.bottomCenter,
+      decoration: BoxDecoration(
+          gradient: const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.transparent, Colors.black],
+              stops: [.50, .75])),
       child: Center(
         child: Stack(
           children: [
-            Container(
-              child: Image.asset('assets/splash_image/_splash_logo.png', width: 30,),
-            )
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  child: Image.asset(
+                    'assets/splash_image/_splash_logo.png', width: 30,),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    '다시 검색하기',
+                    style: TextStyle(
+                      color: Colors.lightBlueAccent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
