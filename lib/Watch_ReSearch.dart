@@ -15,12 +15,6 @@ class _Watch_ReSurchState extends State<Watch_ReSurch> {
       child: Center(
         child: Stack(
           children: [
-            Opacity(
-              opacity: 0.3,
-              child: Container(
-                color: Colors.black,
-              ),
-            ),
             Container(
               child: Image.asset('assets/splash_image/_splash_logo.png', width: 30,),
             )
