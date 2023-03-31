@@ -261,8 +261,8 @@ class _TabPageState extends State<TabPage> {
 
 /*-----------------------------------------------------------------------------------------*/
 
-  // final List _pages = [const History(), const Home(), const Chart()]; // Default
-  final List _pages = [Home(),const Watch_Result_Swipe(id: ''), Chart()]; // Watch_Result로 바로 갈 때 사용 (테스트)
+  final List _pages = [const History(), const Home(), const Chart()]; // Default
+  // final List _pages = [Home(),const Watch_Result_Swipe(id: ''), Chart()];/ // Watch_Result로 바로 갈 때 사용 (테스트)
   // final List _pages = [const Result(id: '',), Home(), Chart()];   // emulator에서 result화면 수정시 History 대신 Result 넣고 수정 (테스트)
 
 

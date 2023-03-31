@@ -86,12 +86,6 @@ class _Watch_Result extends State<Watch_Result> {
       child: Stack(children: [
         Container(
           alignment: Alignment.bottomCenter,
-          decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black],
-                  stops: [.50, .75])),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.center,
