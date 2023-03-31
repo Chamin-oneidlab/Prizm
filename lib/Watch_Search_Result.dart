@@ -44,8 +44,8 @@ class _Watch_Result extends State<Watch_Result> {
 
     try {
       http.Response response = await http.get(
-          Uri.parse('http://dev.przm.kr/przm_api/get_song_search/json?id=WA0632182001001&uid=d99df16f4105e7bd7'));
-          // Uri.parse('http://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
+          // Uri.parse('http://dev.przm.kr/przm_api/get_song_search/json?id=WA0632182001001&uid=d99df16f4105e7bd7'));
+          Uri.parse('http://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
       String jsonData = response.body;
       Map<String, dynamic> map = jsonDecode(jsonData);
 

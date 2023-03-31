@@ -45,8 +45,8 @@ class _Watch_Result_SwipeState extends State<Watch_Result_Swipe> {
 
     try {
       http.Response response = await http.get(Uri.parse(
-          'http://dev.przm.kr/przm_api/get_song_search/json?id=WA0632182001001&uid=d99df16f4105e7bd7'));
-      // 'http://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
+          // 'http://dev.przm.kr/przm_api/get_song_search/json?id=WA0632182001001&uid=d99df16f4105e7bd7'));
+      'http://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
       String jsonData = response.body;
       Map<String, dynamic> map = jsonDecode(jsonData);
 
@@ -123,7 +123,7 @@ class _Watch_Result_SwipeState extends State<Watch_Result_Swipe> {
                       end: Alignment.bottomCenter,
                       colors: [Colors.transparent, Colors.black],
                       stops: [.50, .75])),
-              child: SizedBox.shrink(),
+              child: const SizedBox.shrink(),
             ),
             buildPageView(),
             Column(
@@ -133,11 +133,11 @@ class _Watch_Result_SwipeState extends State<Watch_Result_Swipe> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      margin: EdgeInsets.only(bottom: 5),
+                      margin: const EdgeInsets.only(bottom: 5),
                       child: SmoothPageIndicator(
                         controller: pageController, // PageController
                         count: 2,
-                        effect: WormEffect(
+                        effect: const WormEffect(
                           dotWidth: 4,
                           dotHeight: 5,
                           activeDotColor: Colors.white
@@ -155,11 +155,9 @@ class _Watch_Result_SwipeState extends State<Watch_Result_Swipe> {
     );
   }
   Future<bool> _onBackKey() async {
-    print('back key @@@@@@@@@@@@@@@@@@@@@@@');
     setState(() {
       pageController.animateToPage(0,
           duration: const Duration(milliseconds: 500), curve: Curves.ease);
-      pageController.jumpToPage(_selectedIndex);
     });
     return false;
   }

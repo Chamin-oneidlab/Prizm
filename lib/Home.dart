@@ -164,8 +164,8 @@ class _Home extends State<Home> {
                                     }
 
                                     if (await Permission.microphone.status.isGranted) {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => Watch_Result_Swipe(id: '')));
-                                      //_vmidc.start(); //인식 시작하는 부분
+                                      // Navigator.push(context, MaterialPageRout(builder: (context) => Watch_Result_Swipe(id: '')));
+                                      _vmidc.start(); //인식 시작하는 부분
                                       await MyApp.analytics.logEvent(name: 'vmidc_start');
                                       if(!mounted){
                                         return;
@@ -335,7 +335,6 @@ class _Home extends State<Home> {
   }
 
   Future<bool> _onBackKey() async {
-    print('asdfdsafdsafdsafdsadas');
     if(MyApp.isWatch) return false;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     double c_width = MediaQuery.of(context).size.width;
