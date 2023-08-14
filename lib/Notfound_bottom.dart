@@ -58,6 +58,7 @@ class _BottomState extends State<Notfound_Bottom> {
       _selectedIndex = index;
       pageController.animateToPage(index, duration: const Duration(milliseconds: 500), curve: Curves.ease);
       pageController.jumpToPage(_selectedIndex);
+
     });
   }
 
@@ -71,7 +72,18 @@ class _BottomState extends State<Notfound_Bottom> {
           SystemUiOverlay.bottom
         ]
     );
-    return WillPopScope(
+    return MyApp.isWatch?WillPopScope(
+        onWillPop: (){
+          if(_selectedIndex == 1 && pageController.offset == _deviceData /3) {
+            return _onBackKey();
+          } else {
+            return _backToHome();
+          }
+        },
+        child: Scaffold(
+          body: buildPageView(),
+        )
+    ):WillPopScope(
         onWillPop: (){
           if(_selectedIndex == 1 && pageController.offset == _deviceData /3) {
             return _onBackKey();

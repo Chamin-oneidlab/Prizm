@@ -148,10 +148,11 @@ class _TabPageState extends State<TabPage> {
      *  평소에는 인앱 기본값 으로 설정해놔야 걸리지 않고 넘어감
      */
 
-    // MyApp.appVersion = appVersion; //TODO:: 이거 풀어야함
-    // if (appVersion != packageVersion) {
-    //   showDefaultDialog();
-    // }
+    MyApp.appVersion = appVersion; //TODO:: 이거 풀어야함
+    if (appVersion != packageVersion) {
+      showDefaultDialog();
+    }
+
   }
   
   Future<void> initPlatformState() async {
@@ -270,7 +271,7 @@ class _TabPageState extends State<TabPage> {
 
   fetchData() async { // przm.php 에서 받아오는 json 최상위에서 정의
     try {
-      http.Response response = await http.get(Uri.parse('http://www.przm.kr/przm.php'));
+      http.Response response = await http.get(Uri.parse('https://www.przm.kr/przm.php'));
       String jsonData = response.body;
       Map<String, dynamic> url = jsonDecode(jsonData.toString());
       setState(() {});

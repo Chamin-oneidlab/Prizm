@@ -91,7 +91,7 @@ class _Home extends State<Home> {
       } else {
         _ctrl.stream.listen((data) async {
           if (data.length == 2) {
-            _id = '${data[0]} (${data[1]})';
+            _id = '${data[0]} (${data[1]})'; // TODO: 5-1
           } else {
             _id = 'error';
           }
@@ -162,10 +162,9 @@ class _Home extends State<Home> {
                                       Permission.microphone.request();
                                       return;
                                     }
-
+                                    
                                     if (await Permission.microphone.status.isGranted) {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => Watch_Result_Swipe(id: '')));
-                                      //_vmidc.start(); //인식 시작하는 부분
+                                      _vmidc.start(); //인식 시작하는 부분 TODO: 주석처리풀기
                                       await MyApp.analytics.logEvent(name: 'vmidc_start');
                                       if(!mounted){
                                         return;

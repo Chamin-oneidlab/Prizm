@@ -64,7 +64,34 @@ class _NotFound extends State<NotFound> {
     if (_connectionStatus.endsWith('none') == true) {
       NetworkToast();
     }
-    return WillPopScope(
+    return MyApp.isWatch?Container(
+        color: const Color.fromRGBO(244, 245, 247, 1),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+                height: c_height * 0.59,
+                padding: const EdgeInsets.only(bottom: 50),
+                child: Center(
+                    child: Column(children: <Widget>[
+                      Center(
+                          child: Container(
+                              padding: const EdgeInsets.only(bottom: 20),
+                              child: isDarkMode ? _textColumn_dark : _textColumn_light
+                          )
+                      ),
+                      IconButton(
+                          icon:Image.asset('assets/_prizm.png'),
+                          iconSize: 150,
+                          onPressed: () async {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
+                          }
+                      ),
+                    ]))
+            )
+          ],
+        )
+    ):WillPopScope(
         onWillPop: () async {
           return _onBackKey();
         },
@@ -99,33 +126,33 @@ class _NotFound extends State<NotFound> {
                     ? const Color.fromRGBO(47, 47, 47, 1)
                     : const Color.fromRGBO(244, 245, 247, 1),
                 child:
-                    Column(mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                  Container(
-                      height: c_height * 0.59,
-                      padding: const EdgeInsets.only(bottom: 50),
-                      child: Center(
-                          child: Column(children: <Widget>[
-                        Center(
-                            child: Container(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: isDarkMode ? _textColumn_dark : _textColumn_light
-                            )
-                        ),
-                        IconButton(
-                          icon: isDarkMode
-                              ? Image.asset('assets/_prizm_dark.png')
-                              : Image.asset('assets/_prizm.png'),
-                          padding: const EdgeInsets.only(bottom: 30),
-                          iconSize: 220,
-                          onPressed: () {
-                            _vmidc.stop();
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
-                          },
-                        )
-                      ]))
-                  )
-                ])
+                Column(mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                          height: c_height * 0.59,
+                          padding: const EdgeInsets.only(bottom: 50),
+                          child: Center(
+                              child: Column(children: <Widget>[
+                                Center(
+                                    child: Container(
+                                        padding: const EdgeInsets.only(bottom: 20),
+                                        child: isDarkMode ? _textColumn_dark : _textColumn_light
+                                    )
+                                ),
+                                IconButton(
+                                  icon: isDarkMode
+                                      ? Image.asset('assets/_prizm_dark.png')
+                                      : Image.asset('assets/_prizm.png'),
+                                  padding: const EdgeInsets.only(bottom: 30),
+                                  iconSize: 220,
+                                  onPressed: () {
+                                    _vmidc.stop();
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
+                                  },
+                                )
+                              ]))
+                      )
+                    ])
             )
         )
     );

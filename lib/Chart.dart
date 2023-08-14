@@ -50,7 +50,9 @@ class _Chart extends State<Chart> {
 
   void fetchData() async {
     try {
-      http.Response response = await http.get(Uri.parse('http://${MyApp.ranks}'));
+      http.Response response = await http.get(Uri.parse('https://${MyApp.ranks}'));
+      print("@>@>@>@>@");
+      print(MyApp.ranks);
       String jsonData = response.body;
       charts = jsonDecode(jsonData.toString());
       setState(() {});

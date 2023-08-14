@@ -1,0 +1,2 @@
+ninja: Entering directory `C:\Prizm\android\app\.cxx\Debug\v3t5f634\armeabi-v7a'
+ninja: no work to do.

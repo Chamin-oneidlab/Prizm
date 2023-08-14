@@ -1,0 +1,7 @@
+Executable : C:\Users\Won\AppData\Local\Android\sdk\cmake\3.18.1\bin\ninja.exe
+arguments : 
+-C
+C:\Prizm\android\app\.cxx\RelWithDebInfo\n4w6g5q6\armeabi-v7a
+native
+jvmArgs : 
+

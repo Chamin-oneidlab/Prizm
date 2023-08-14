@@ -21,20 +21,21 @@ class Watch_Result_Swipe extends StatefulWidget {
 }
 
 class _Watch_Result_SwipeState extends State<Watch_Result_Swipe> {
+  late dynamic _background = const ColorFilter.mode(Colors.transparent, BlendMode.clear);
   late List _pages = [];
   var maps;
-
-  void fetchData() async {
-    if (!mounted) {
-      return;
-    }
+  var artist;
+  var title;
+  var image="";
+  late Future myFuture;
+  Future<String> fetchData() async {
     String? uid;
-    var deviceInfoPlugin = DeviceInfoPlugin();
+
     try {
       if (Platform.isAndroid) {
         uid = await PlatformDeviceId.getDeviceId;
-        print('uid >> $uid');
       } else if (Platform.isIOS) {
+        var deviceInfoPlugin = DeviceInfoPlugin();
         var iosInfo = await deviceInfoPlugin.iosInfo;
         uid = iosInfo.identifierForVendor!;
       }
@@ -45,23 +46,27 @@ class _Watch_Result_SwipeState extends State<Watch_Result_Swipe> {
 
     try {
       http.Response response = await http.get(Uri.parse(
-          'http://dev.przm.kr/przm_api/get_song_search/json?id=WA0632182001001&uid=d99df16f4105e7bd7'));
-      // 'http://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
+          'https://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
       String jsonData = response.body;
       Map<String, dynamic> map = jsonDecode(jsonData);
-
       maps = map;
+      title = map['TITLE'];
+      artist = map['ARTIST'];
+      image = map['IMAGE'];
+      _pages = [Watch_Result(id: widget.id,title:title,artist: artist), Watch_ReSurch()];
+
       setState(() {});
     } catch (e) {
       rethrow;
     }
+
+    return "done";
   }
 
   @override
   void initState() {
-    _pages = [Watch_Result(id: widget.id), Watch_ReSurch()];
-    fetchData();
     super.initState();
+    myFuture = fetchData();
   }
 
   int _selectedIndex = 0; // 처음에 나올 화면 지정
@@ -94,62 +99,118 @@ class _Watch_Result_SwipeState extends State<Watch_Result_Swipe> {
     double c_height = MediaQuery.of(context).size.height; // 화면상의 전체 높이
     double c_width = MediaQuery.of(context).size.width; // 화면상의 전치 너비
 
-    return WillPopScope(
-      onWillPop: _onBackKey,
-      child: Scaffold(
-        body: Stack(
-          children: [
-            Container(
-                child: Image.network(
-              '${maps['IMAGE']}',
-              height: c_height,
-              width: c_width,
-              fit: BoxFit.fill,
-              errorBuilder: (context, error, stackTrace) {
-                return SizedBox(
-                  child: Image.asset(
-                    'assets/no_image.png',
-                    height: c_height,
-                    fit: BoxFit.fill,
+    return Scaffold(
+      body: WillPopScope(
+        onWillPop: _onBackKey,
+        child: FutureBuilder(
+            future: myFuture,
+            builder: (BuildContext context, AsyncSnapshot snapshot){
+              if(snapshot.hasData == false){
+                return Container(
+                  // height: double.infinity,
+                  //   width: double.infinity, //
+                    color: const Color.fromRGBO(244, 245, 247, 1),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          // margin: EdgeInsets.only(top: 30),
+                          //   height: c_height,
+                          // width: double.infn b inity,
+                            padding: EdgeInsets.only(bottom: 40),
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    image: AssetImage('assets/BG_light.gif'),
+                                    colorFilter: const ColorFilter.mode(Colors.transparent, BlendMode.color),
+                                    // fit: BoxFit.fill,
+                                    alignment: const Alignment(0 , 3)
+                                )
+                            ),
+                            child: Center(
+                                child: Column(
+                                    children: <Widget>[
+                                      IconButton(
+                                          padding: EdgeInsets.only(top: 30),
+                                          icon:Image.asset('assets/_prizm.png'),
+                                          iconSize: 150,
+                                          onPressed: () async {
+                                          }
+                                      ),
+                                    ]
+                                )
+                            )
+                        ),
+                      ],
+                    )
+                );
+              }else if (snapshot.hasError){
+                return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                        'ERROR: ${snapshot.error}',
+                        style: TextStyle(fontSize: 15)
+                    )
+                );
+              }
+              else {
+                return Scaffold(
+                  body: Stack(
+                    children: [
+                      Container(
+                          child: Image.network(
+                            image,
+                            height: c_height,
+                            width: c_width,
+                            fit: BoxFit.fill,
+                            errorBuilder: (context, error, stackTrace) {
+                              return SizedBox(
+                                child: Image.asset(
+                                  image==""?'assets/no_image.png':image,
+                                  height: c_height,
+                                  fit: BoxFit.fill,
+                                ),
+                              );
+                            },
+                          )),
+                      Container(
+                        alignment: Alignment.bottomCenter,
+                        decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Colors.transparent, Colors.black],
+                                stops: [.50, .75])),
+                        child: SizedBox.shrink(),
+                      ),
+                      buildPageView(),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                margin: EdgeInsets.only(bottom: 5),
+                                child: SmoothPageIndicator(
+                                  controller: pageController, // PageController
+                                  count: 2,
+                                  effect: WormEffect(
+                                      dotWidth: 4,
+                                      dotHeight: 5,
+                                      activeDotColor: Colors.white
+                                  ), // your preferred effect
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                    ],
                   ),
                 );
-              },
-            )),
-            Container(
-              alignment: Alignment.bottomCenter,
-              decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black],
-                      stops: [.50, .75])),
-              child: SizedBox.shrink(),
-            ),
-            buildPageView(),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(bottom: 5),
-                      child: SmoothPageIndicator(
-                        controller: pageController, // PageController
-                        count: 2,
-                        effect: WormEffect(
-                          dotWidth: 4,
-                          dotHeight: 5,
-                          activeDotColor: Colors.white
-                        ), // your preferred effect
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-          ],
+              }
+            }
         ),
       ),
     );

@@ -66,13 +66,13 @@ class _Terms extends State<Terms> {
               children: [
                 Expanded(
                     child: WebView(
-                  initialUrl: 'http://${MyApp.terms}',
+                  initialUrl: 'https://${MyApp.terms}',
                   javascriptMode: JavascriptMode.unrestricted,
                   onPageStarted: (String url) {
                     if (_connectionStatus.endsWith('none') == true) {
                       NetworkToast();
                     } else {
-                      _webViewController?.loadUrl('http://${MyApp.terms}');
+                      _webViewController?.loadUrl('https://${MyApp.terms}');
                     }
                   },
                 )),

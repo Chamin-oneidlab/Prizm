@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "296859940615",
+    "firebase_url": "https://prizm-oneidlab-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "prizm-oneidlab",
+    "storage_bucket": "prizm-oneidlab.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:296859940615:android:b70c01007646f7f94bb7a2",
+        "android_client_info": {
+          "package_name": "com.oneidlab.prizm"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "296859940615-a3t9odj44rau2jf4e6qaufvil1cadi42.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDx20MMXkbCgtcvneH7drGS8JMQ6uiG_YI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "296859940615-a3t9odj44rau2jf4e6qaufvil1cadi42.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "296859940615-b9mh6kgf4ah53h38itc4pm2l78n0ttn7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ios.prizm"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

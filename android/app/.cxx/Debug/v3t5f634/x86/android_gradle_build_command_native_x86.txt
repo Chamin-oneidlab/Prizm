@@ -1,0 +1,7 @@
+Executable : C:\Users\Won\AppData\Local\Android\sdk\cmake\3.18.1\bin\ninja.exe
+arguments : 
+-C
+C:\Prizm\android\app\.cxx\Debug\v3t5f634\x86
+native
+jvmArgs : 
+

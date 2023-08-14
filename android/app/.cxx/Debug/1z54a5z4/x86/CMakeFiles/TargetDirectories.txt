@@ -1,0 +1,2 @@
+C:/Prizm/android/app/.cxx/Debug/1z54a5z4/x86/CMakeFiles/edit_cache.dir
+C:/Prizm/android/app/.cxx/Debug/1z54a5z4/x86/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,2 @@
+C:/Prizm/android/app/.cxx/RelWithDebInfo/6b5i6r16/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Prizm/android/app/.cxx/RelWithDebInfo/6b5i6r16/armeabi-v7a/CMakeFiles/rebuild_cache.dir

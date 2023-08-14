@@ -1,0 +1,2 @@
+ninja: Entering directory `C:\Prizm\android\app\.cxx\RelWithDebInfo\n4w6g5q6\arm64-v8a'
+ninja: no work to do.
