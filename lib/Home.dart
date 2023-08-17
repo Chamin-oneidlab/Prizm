@@ -120,11 +120,7 @@ class _Home extends State<Home> {
     final isTransParents = settingIcon.color == const Color(0x00000000);  // Setting Icon 색에 따라 leading Icon 투명화
     final isPad = c_width > 550;
     return MyApp.isWatch
-        ?WillPopScope(
-        onWillPop: () async {
-          exit(0);
-        },
-        child: Container(
+        ?Container(
           // height: double.infinity,
           //   width: double.infinity, //
             color: const Color.fromRGBO(244, 245, 247, 1),
@@ -135,7 +131,7 @@ class _Home extends State<Home> {
                   // margin: EdgeInsets.only(top: 30),
                   //   height: c_height,
                   // width: double.infn b inity,
-                    padding: EdgeInsets.only(bottom: 40),
+                  //   padding: EdgeInsets.only(bottom: 40),
                     decoration: BoxDecoration(
                         image: DecorationImage(
                             image: AssetImage('assets/BG_light.gif'),
@@ -148,7 +144,7 @@ class _Home extends State<Home> {
                         child: Column(
                             children: <Widget>[
                               IconButton(
-                                  padding: EdgeInsets.only(top: 25),
+                                  // padding: EdgeInsets.only(top: 25),
                                   icon:Image.asset('assets/_prizm.png'),
                                   iconSize: watch_size,
                                   onPressed: () async {
@@ -186,8 +182,7 @@ class _Home extends State<Home> {
                 ),
               ],
             )
-        )
-    ):WillPopScope(
+        ):WillPopScope(
         onWillPop: () async {
           return _onBackKey();
         },
@@ -383,7 +378,7 @@ class _Home extends State<Home> {
                               ),
                               child: TextButton(
                                       onPressed: () {
-                                        exit(0);
+                                        Platform.isAndroid?SystemChannels.platform.invokeMethod('SystemNavigator.pop'):exit(0);
                                       },
                                       child: const Text(
                                         '종료',

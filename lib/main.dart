@@ -283,12 +283,10 @@ class _TabPageState extends State<TabPage> {
       MyApp.privacy = url['privacy'];
       MyApp.terms = url['terms'];
       MyApp.vmidc = url['vmidc'];
-      print(url);
     } catch (e) {
       rethrow;
     }
   }
-
 
   @override
   void initState() {
@@ -330,12 +328,16 @@ class _TabPageState extends State<TabPage> {
         SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
     return WillPopScope(
-        onWillPop: () {
-          if (_selectedIndex == 1 && pageController.offset == _deviceData / 3) {
-            return _onBackKey();//디바이스 widthPx / 3 의 값이 page offset 값과 같고 index 1번일떄 종료 dialog
-          } else {
-            return _backToHome();
+        onWillPop: () async{
+          if(MyApp.isWatch) return true;
+          if(!MyApp.isWatch){
+            if (_selectedIndex == 1 && pageController.offset == _deviceData / 3) {
+              return _onBackKey();//디바이스 widthPx / 3 의 값이 page offset 값과 같고 index 1번일떄 종료 dialog
+            } else {
+              return _backToHome();
+            }
           }
+          return false;
         },
         child: Scaffold(
           body: buildPageView(),
