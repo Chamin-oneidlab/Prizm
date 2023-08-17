@@ -76,6 +76,7 @@ class MyApp extends StatelessWidget {
   static var privacy;
   static var terms;
   static var isWatch;
+  static var vmidc;
 
   @override
   Widget build(BuildContext context) {
@@ -281,6 +282,8 @@ class _TabPageState extends State<TabPage> {
       MyApp.ranks = url['ranks'];
       MyApp.privacy = url['privacy'];
       MyApp.terms = url['terms'];
+      MyApp.vmidc = url['vmidc'];
+      print(url);
     } catch (e) {
       rethrow;
     }

@@ -5,7 +5,6 @@ import 'package:Prizm/Home_NotFound.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'Chart.dart';
 import 'History.dart';
 import 'main.dart';
@@ -18,6 +17,7 @@ class Notfound_Bottom extends StatefulWidget{
 class _BottomState extends State<Notfound_Bottom> {
   int _selectedIndex = 1;
   final List _pages = [History(), NotFound(), Chart()];
+
 
   static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
@@ -49,7 +49,7 @@ class _BottomState extends State<Notfound_Bottom> {
   Widget buildPageView() {
     return PageView(
       controller: pageController,
-      children: [_pages[0], _pages[1], _pages[2]],
+      children: MyApp.isWatch?[NotFound()]:[_pages[0], _pages[1], _pages[2]],
     );
   }
 
@@ -57,7 +57,7 @@ class _BottomState extends State<Notfound_Bottom> {
     setState(() {
       _selectedIndex = index;
       pageController.animateToPage(index, duration: const Duration(milliseconds: 500), curve: Curves.ease);
-      pageController.jumpToPage(_selectedIndex);
+      pageController.jumpToPage(MyApp.isWatch?0:_selectedIndex);
 
     });
   }
@@ -72,17 +72,8 @@ class _BottomState extends State<Notfound_Bottom> {
           SystemUiOverlay.bottom
         ]
     );
-    return MyApp.isWatch?WillPopScope(
-        onWillPop: (){
-          if(_selectedIndex == 1 && pageController.offset == _deviceData /3) {
-            return _onBackKey();
-          } else {
-            return _backToHome();
-          }
-        },
-        child: Scaffold(
+    return MyApp.isWatch?Scaffold(
           body: buildPageView(),
-        )
     ):WillPopScope(
         onWillPop: (){
           if(_selectedIndex == 1 && pageController.offset == _deviceData /3) {

@@ -85,7 +85,7 @@ class _Home extends State<Home> {
     Permission.microphone.request();
     initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    _vmidc.init(ip: '222.122.131.220', port: 8551, sink: _ctrl.sink).then((ret) {   //ip, port 번호 변경시 여기만 변경
+    _vmidc.init(ip: "${MyApp.vmidc}", port: 8551, sink: _ctrl.sink).then((ret) {   //ip, port 번호 변경시 여기만 변경
       if (!ret) {
         print('server error');
       } else {
@@ -119,12 +119,12 @@ class _Home extends State<Home> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTransParents = settingIcon.color == const Color(0x00000000);  // Setting Icon 색에 따라 leading Icon 투명화
     final isPad = c_width > 550;
-    return WillPopScope(
+    return MyApp.isWatch
+        ?WillPopScope(
         onWillPop: () async {
-          return _onBackKey();
+          exit(0);
         },
-        child: MyApp.isWatch
-            ?Container(
+        child: Container(
           // height: double.infinity,
           //   width: double.infinity, //
             color: const Color.fromRGBO(244, 245, 247, 1),
@@ -134,21 +134,21 @@ class _Home extends State<Home> {
                 Container(
                   // margin: EdgeInsets.only(top: 30),
                   //   height: c_height,
-                    // width: double.infn b inity,
+                  // width: double.infn b inity,
                     padding: EdgeInsets.only(bottom: 40),
                     decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage('assets/BG_light.gif'),
-                          colorFilter: _background,
-                          // fit: BoxFit.fill,
-                          alignment: const Alignment(0 , 3)
+                            image: AssetImage('assets/BG_light.gif'),
+                            colorFilter: _background,
+                            // fit: BoxFit.contain,
+                            alignment: const Alignment(0 , 2)
                         )
                     ),
                     child: Center(
                         child: Column(
                             children: <Widget>[
                               IconButton(
-                                padding: EdgeInsets.only(top: 30),
+                                  padding: EdgeInsets.only(top: 25),
                                   icon:Image.asset('assets/_prizm.png'),
                                   iconSize: watch_size,
                                   onPressed: () async {
@@ -162,7 +162,7 @@ class _Home extends State<Home> {
                                       Permission.microphone.request();
                                       return;
                                     }
-                                    
+
                                     if (await Permission.microphone.status.isGranted) {
                                       _vmidc.start(); //인식 시작하는 부분 TODO: 주석처리풀기
                                       await MyApp.analytics.logEvent(name: 'vmidc_start');
@@ -187,19 +187,11 @@ class _Home extends State<Home> {
               ],
             )
         )
-        /*
-        *
-        *
-        *
-        *
-        *       Watch
-        *
-        *
-        *
-        *
-        *
-        * */
-            :Scaffold(
+    ):WillPopScope(
+        onWillPop: () async {
+          return _onBackKey();
+        },
+        child: Scaffold(
           appBar: AppBar(
             backgroundColor: isDarkMode ? const Color.fromRGBO(47, 47, 47, 1) : const Color.fromRGBO(244, 245, 247, 1),
             centerTitle: true,
@@ -335,7 +327,7 @@ class _Home extends State<Home> {
 
   Future<bool> _onBackKey() async {
     print('asdfdsafdsafdsafdsadas');
-    if(MyApp.isWatch) return false;
+    if(MyApp.isWatch) return true;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     double c_width = MediaQuery.of(context).size.width;
     return await showDialog(
