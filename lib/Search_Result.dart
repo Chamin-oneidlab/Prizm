@@ -1,6 +1,6 @@
 // --no-sound-null-safety
+import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
@@ -12,11 +12,12 @@ import 'chart/chart_container.dart';
 import 'main.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 
 class Result extends StatefulWidget {
-  final String id;
+  late final String id;
 
-  const Result({
+  Result({
     Key? key,
     required this.id,
   }) : super(key: key);
@@ -26,23 +27,25 @@ class Result extends StatefulWidget {
 }
 
 class _Result extends State<Result> {
-  String url = 'https://oneidlab.page.link/prizm';  // url Default 값
-  Future<void> remoteconfig() async{
-    final FirebaseRemoteConfig remoteConfig = await FirebaseRemoteConfig.instance;
-    remoteConfig.setDefaults({'shareUrl' : url});
-    await remoteConfig.setConfigSettings(
-      RemoteConfigSettings(
-          fetchTimeout: const Duration(minutes: 1),
-          minimumFetchInterval: Duration.zero)
-    );
-    await remoteConfig.fetchAndActivate();
-    String shareUrl = remoteConfig.getString('shareUrl');
-    url = shareUrl;
+  Future <void> logSetscreen() async {
+    await MyApp.analytics.setCurrentScreen(screenName: 'ios 검색결과');
   }
-
+  //-----------
+  late dynamic _background = const ColorFilter.mode(
+      Colors.transparent, BlendMode.color
+  );
+  //-----------
+  late Future myFuture;
   var maps;
   List programs = [];
   List song_cnts = [];
+
+  var image;
+  var title;
+  var artist;
+  var album;
+  var date_;
+  var count;
 
   var cnt;
 
@@ -63,56 +66,65 @@ class _Result extends State<Result> {
   var sum;
   var avgY;
 
-  void fetchData() async {
-    if(!mounted) {
-      return;
-    }
-    String? uid;
+  Future<String> fetchData() async {
+    String? _uid;
     var deviceInfoPlugin = DeviceInfoPlugin();
+
     try {
-      if (Platform.isAndroid) {
-        uid = await PlatformDeviceId.getDeviceId;
-      } else if (Platform.isIOS) {
+      if(Platform.isAndroid) {
+        _uid = await PlatformDeviceId.getDeviceId;
+        print('android uid : $_uid');
+      } else if(Platform.isIOS) {
         var iosInfo = await deviceInfoPlugin.iosInfo;
-        uid = iosInfo.identifierForVendor!;
+        _uid = iosInfo.identifierForVendor!;
+        print('ios uid : $_uid');
       }
     } on PlatformException {
-      uid = 'Failed to get Id';
-      rethrow;
+      _uid = 'Failed to get Id';
     }
 
 // json for title album artist
-
     try {
       http.Response response = await http.get(
-          // Uri.parse('http://dev.przm.kr/przm_api/get_song_search/json?id=WA0632182001001&uid=11B9E7C3-4BF1-465B-B522-6158756CC737'));
-      Uri.parse('http://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
+          Uri.parse('https://${MyApp.search}/json?id=${widget.id}&uid=$_uid')
+      );
+
       String jsonData = response.body;
       Map<String, dynamic> map = jsonDecode(jsonData);
 
       maps = map;
+      image = maps['IMAGE'];
+      title = maps['TITLE'];
+      artist = maps['ARTIST'];
+      album = maps['ALBUM'];
+      date_ = maps['date'];
+      count = maps['count'];
       song_cnts = maps['song_cnts'];
+
       setState(() {});
     } catch (e) {
-      rethrow;
+      print('json 가져오기 실패');
+      print(e);
     }
 
 //json for program list
+
     try {
       http.Response response = await http.get(
-          Uri.parse('http://${MyApp.programs}/json?id=${widget.id}')
-          // Uri.parse('http://dev.przm.kr/przm_api/get_song_programs/json?id=WA0632182001001')
-    );
+          Uri.parse('https://${MyApp.programs}/json?id=${widget.id}')
+        // Uri.parse('${MyApp.Uri}get_song_programs/json?id=${widget.id}')
+      );
       String jsonData = response.body;
 
       programs = jsonDecode(jsonData.toString());
       setState(() {});
     } catch (e) {
-      rethrow;
+      print('fail to get json');
+      print(e);
     }
 
     try {
-      List contain = []; // 실데이터 파싱
+      List _contain = [];  // 실데이타 파싱
       sum = 0;
       for (int i = 0; i <= song_cnts.length - 1; i++) {
         intX = int.parse(song_cnts[i]['F_MONTH'].toString());
@@ -121,145 +133,287 @@ class _Result extends State<Result> {
         listY.add(intY);
         listX.sort();
         listY.sort();
-        contain.add(song_cnts[i]['F_MONTH'].toString());
+        _contain.add(song_cnts[i]['F_MONTH'].toString());
         for (var y = 0; y < listY.length; y++) {
           sum += listY[y];
         }
       }
-      avgY = sum / listY.length;  // 하단에 Y 축 조정을 위해 사용
+      avgY = sum / listY.length;
 
-      List dateList = [];
-      var dateTime;
-      var month;
-      var year;
+      List _dateList = [];
+      var _dateTime;
+      var _month;
+      var _year;
 
-      for (var i = 1; i < 13; i++) {  //차트 x 축 기준
-        dateTime = DateTime(now.year, now.month - i, 1);
-        month = DateFormat('MM').format(dateTime);
-        year = DateFormat('yyyy').format(dateTime);
-        dateList.add(year + month);
+//차트 x 축 기준 만들기
+      for (var i = 1; i < 13; i++) {
+        _dateTime = DateTime(now.year, now.month - i, 1);
+        _month = DateFormat('MM').format(_dateTime);
+        _year = DateFormat('yyyy').format(_dateTime);
+        _dateList.add(_year + _month);
       }
-      List reverse = List.from(dateList.reversed);  // 1년 전 부터 현재월 -1 까지 출력이기 때문에 순서 뒤집기
+      List _reverse = List.from(_dateList.reversed);
 
-      // 현재월
-      // 차트 실데이터 파싱
-      for (int j = 0; j < reverse.length; j++) {
-        double mon = double.parse(j.toString()) + 1;  // FLSpot 에 double 로 들어가야 하기 때문에 double 로 parse
+// 현재월
+// 차트 실데이터 파싱
+      for (int j = 0; j < _reverse.length; j++) {
+
+//없는 월 제외
+        double mon = double.parse(j.toString()) + 1;
+
         FlSpotDataAll.insert(j, FlSpot(mon, 0));
-
         for (int jj = 0; jj < song_cnts.length; jj++) {
-          if (song_cnts[jj]['F_MONTH'].toString() == reverse[j]) {
+          if (song_cnts[jj]['F_MONTH'].toString() == _reverse[j]) {
             cnt = double.parse(song_cnts[jj]['CTN']);
-            FlSpotDataAll.removeAt(j); //없는 월 제외
-            FlSpotDataAll.insert(j, FlSpot(mon, cnt));  // 데이터 대입
+            FlSpotDataAll.removeAt(j);
+            FlSpotDataAll.insert(j, FlSpot(mon, cnt));
           }
         }
       }
-      FlSpotDataAll.removeWhere((items) => items.props.contains(0.0));  // 조회수가 0 인 월 제외
+      FlSpotDataAll.removeWhere((items) => items.props.contains(0.0));
     } catch (e) {
-      rethrow;
+      print('fail to make FlSpotData');
+      print(e);
     }
+    return 'done';
   }
 
-  Future<void> logSetscreen() async {
-    await MyApp.analytics.setCurrentScreen(screenName: '검색결과');
+  final duplicateItems =
+  List<String>.generate(1000, (i) => "$Container(child:Text $i)");
+  var items = <String>[];
+
+  Future<void> getLink() async {
+    final dynamicLinkParams = DynamicLinkParameters(
+      link: Uri.parse('https://oneidlab.page.link/'),
+      uriPrefix: 'https://oneidlab.page.link/prizmios',
+      iosParameters: const IOSParameters(
+          bundleId: 'com.ios.prizm',
+          appStoreId: '123456789',
+          minimumVersion: '1.0.0'
+      ),
+    );
   }
 
   @override
   void initState() {
-    remoteconfig();
     logSetscreen();
-    fetchData();
+    getLink();
+    myFuture = fetchData();
     super.initState();
   }
 
   @override
   void dispose() {
+    print('dispose');
+    line_chart(song_cnts);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.top]);
-    double c_height = MediaQuery.of(context).size.height; // 화면상의 전체 높이
-    double c_width = MediaQuery.of(context).size.width; // 화면상의 전치 너비
-    final CNTS = song_cnts.length > 3 && listY.last > 10;  // 차트에 조회수를 가지고 있는 달이 3달 이상 && Y의 최대값이 10 이상
-    final isExist = programs.isEmpty;   // 프로그램 방송 정보가 없을경우
-    final isArtistNull = maps['ARTIST'] == null;  // Artist 의 정보가 없을경우
-    final isAlbumNull = maps['ALBUM'] == null; // Album 의 정보가 없을경우
-    final isImage = maps['IMAGE'].toString().startsWith('assets') == false; // false 일 경우 이미지가 있는것, true 일 경우 assets/no_image.png
-
-
-    //  ▼ 대중적인 기기 비율에 맞춰 계산해놓은것 나중에 방법 있으면 바꾸길 추천
-    final isPad = c_width > 800;
+    double c_height = MediaQuery.of(context).size.height;
+    double c_width = MediaQuery.of(context).size.width * 1.0;
+    final isPad = c_width > 550;
+    final isCNTS = song_cnts.length > 3;
+    final isExist = programs.length == 0;
+    final isImage = true;
     final isFlip = c_height / c_width > 2.3;
     final isUltra = c_height > 1000;
     final isPlus = 1000 < c_height && 1300 >= c_height && c_width > 500;
     final isNormal = c_height < 850;
-    return WillPopScope(
-      onWillPop: () async {
-        return _onBackKey();
-      },
-      child: Scrollbar(
-        child: SizedBox(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Material(
-                color: isDarkMode ? Colors.black : Colors.white,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Stack(
-                      children: [
-                        Center(
-                          child: isFlip
-                              ? SizedBox(
-                                  child: Image.network(
-                                  '${maps['IMAGE']}',
-                                  height: c_height * 0.57,
-                                  fit: BoxFit.fill,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return SizedBox(
-                                      child: Image.asset(
-                                        'assets/no_image.png',
-                                        height: c_height * 0.57,
-                                        fit: BoxFit.fill,
-                                      ),
-                                    );
-                                  },
-                                )
-                              )
-                              : isPad
-                                  ? SizedBox(
-                                      child: Image.network(
-                                      '${maps['IMAGE']}',
-                                      height: c_height * 0.5,
-                                      width: c_height * 0.5,
-                                      fit: BoxFit.fill,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return SizedBox(
-                                          child: Image.asset(
-                                            'assets/no_image.png',
-                                            height: c_height * 0.5,
-                                            fit: BoxFit.fill,
+
+    // print('height = ${c_height.toInt()}');
+    // print('width = ${c_width.toInt()}');
+    // print('height / width = ${c_height/c_width}');
+
+    return
+      WillPopScope(
+        onWillPop: () async {
+          return _onBackKey();
+        },
+        child: FutureBuilder(
+            future: myFuture,
+            builder: (BuildContext context, AsyncSnapshot snapshot){
+              if(snapshot.hasData == false){
+                return Scaffold(
+                  bottomNavigationBar: StyleProvider(
+                      style: isDarkMode? Style_dark() : Style(),
+                      child: ConvexAppBar(
+// type: BottomNavigationBarType.fixed, // bottomNavigationBar item이 4개 이상일 경우
+                        items: [
+                          TabItem(
+                            icon: Image.asset('assets/history.png'),
+                            title: '히스토리',
+                          ),
+                          TabItem(
+                            icon: isDarkMode
+                                ? Image.asset('assets/search_dark.png')
+                                : Image.asset('assets/search.png'),
+                          ),
+                          TabItem(
+                            title: '차트',
+                            icon: Image.asset('assets/chart.png', width: 50),
+                          ),
+                        ],
+                        onTap: (int){},
+                        height: 80,
+                        style: TabStyle.fixedCircle,
+                        curveSize: 100,
+                        elevation: 2.0,
+                        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                      )
+                  ),
+                  appBar: AppBar(
+                    backgroundColor: isDarkMode
+                        ? const Color.fromRGBO(47, 47, 47, 1)
+                        : const Color.fromRGBO(244, 245, 247, 1),
+                    title: Image.asset(
+                      isDarkMode ? 'assets/logo_dark.png' : 'assets/logo_light.png',
+                      height: 25,
+                    ),
+                    automaticallyImplyLeading: false,
+                    leading: IconButton(
+                      icon: Image.asset('assets/x_icon.png', width: 20,
+                        // color: isTransParent ? isDarkMode ? Colors.white : Colors.grey : Colors.transparent
+                      ),
+                      splashColor: Colors.transparent,
+                      onPressed: () {
+                      },
+                    ),
+                    centerTitle: true,
+                    toolbarHeight: 90,
+                    elevation: 0.0,
+                  ),
+                  body: Container(
+                      width: double.infinity,
+                      color: isDarkMode
+                          ? const Color.fromRGBO(47, 47, 47, 1)
+                          : const Color.fromRGBO(244, 245, 247, 1),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Container(
+                              height: c_height * 0.55,
+                              padding: const EdgeInsets.only(bottom: 50),
+                              decoration: isPad
+                                  ? BoxDecoration(
+                                  image: DecorationImage(
+                                      image: AssetImage(isDarkMode
+                                          ? 'assets/BG_dark.gif'
+                                          : 'assets/BG_light.gif'),
+                                      alignment: const Alignment(0, -1.8),
+                                      fit: BoxFit.cover,
+                                      colorFilter: _background))
+                                  : BoxDecoration(
+                                  image: DecorationImage(
+                                      image: AssetImage(isDarkMode
+                                          ? 'assets/BG_dark.gif'
+                                          : 'assets/BG_light.gif'),
+                                      alignment: isFlip
+                                          ? const Alignment(0, 1)
+                                          : const Alignment(0, 3),
+                                      colorFilter: _background)),
+                              child: Center(
+                                  child: Column(children: <Widget>[
+                                    Center(
+                                        child: Container(
+                                          margin: const EdgeInsets.only(bottom: 20),
+                                          child: RichText(
+                                              text: isDarkMode
+                                                  ? const TextSpan(
+                                                  text: '노래 분석중',
+                                                  style: TextStyle(
+                                                      color: Color.fromRGBO(43, 226, 193, 1),
+                                                      fontSize: 17,
+                                                      fontWeight: FontWeight.bold
+                                                  ))
+                                                  : const TextSpan(
+                                                text: '노래 분석중',
+                                                style: TextStyle(
+                                                    color: Color.fromRGBO(43, 226, 193, 1),
+                                                    fontSize: 17,
+                                                    fontWeight: FontWeight.bold),
+                                              )
                                           ),
-                                        );
-                                      },
+                                        )),
+                                    IconButton(
+                                        icon: isDarkMode
+                                            ? Image.asset('assets/_prizm_dark.png')
+                                            : Image.asset('assets/_prizm.png'),
+                                        padding: const EdgeInsets.only(bottom: 30),
+                                        iconSize: 220,
+                                        onPressed: () async {}),
+                                  ])
+                              )
+                          ),
+                        ],
+                      )
+                  ),
+                );
+              }else if (snapshot.hasError){
+                return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                        'ERROR: ${snapshot.error}',
+                        style: TextStyle(fontSize: 15)
+                    )
+                );
+              }
+              else {
+                return Scrollbar(
+                  child: SizedBox(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.vertical,
+                      child: Material(
+                          color: isDarkMode ? Colors.black : Colors.white,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Stack(
+                                children: [
+                                  Center(
+                                    child: isFlip
+                                        ? SizedBox(
+                                        child: Image.network(
+                                          '${image}',
+                                          height: c_height * 0.57,
+                                          fit: BoxFit.fill,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return SizedBox(
+                                              child: Image.asset(
+                                                'assets/no_image.png',
+                                                height: c_height * 0.57,
+                                                fit: BoxFit.fill,
+                                              ),
+                                            );
+                                          },
+                                        )
                                     )
-                                  )
-                                  : isPlus
-                                      ? SizedBox(
-                                          child: Image.network(
-                                          '${maps['IMAGE']}',
-                                          width: c_width,
+                                        : isPad
+                                        ? SizedBox(
+                                        child: Image.network(
+                                          '${image}',
+                                          height: c_height * 0.5,
+                                          fit: BoxFit.fill,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return SizedBox(
+                                              child: Image.asset(
+                                                'assets/no_image.png',
+                                                height: c_height * 0.5,
+                                                fit: BoxFit.fill,
+                                              ),
+                                            );
+                                          },
+                                        )
+                                    )
+                                        : isPlus
+                                        ?SizedBox(
+                                        child: Image.network(
+                                          '${image}',
                                           height: c_height * 0.4,
                                           fit: BoxFit.fill,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
+                                          errorBuilder: (context, error, stackTrace) {
                                             return SizedBox(
                                               child: Image.asset(
                                                 'assets/no_image.png',
@@ -269,316 +423,342 @@ class _Result extends State<Result> {
                                             );
                                           },
                                         )
-                                      )
-                                      : isUltra
-                                          ? SizedBox(
-                                              child: Image.network(
-                                              '${maps['IMAGE']}',
-                                              height: c_height * 0.5,
-                                              fit: BoxFit.fill,
-                                              errorBuilder:
-                                                  (context, error, stackTrace) {
-                                                return SizedBox(
-                                                  child: Image.asset(
-                                                    'assets/no_image.png',
-                                                    height: c_height * 0.5,
-                                                    fit: BoxFit.fill,
-                                                  ),
+                                    )
+                                        : isUltra
+                                        ? SizedBox(
+                                        child: Image.network(
+                                          '${image}',
+                                          height: c_height * 0.5,
+                                          fit: BoxFit.fill,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return SizedBox(
+                                              child: Image.asset(
+                                                'assets/no_image.png',
+                                                height: c_height * 0.5,
+                                                fit: BoxFit.fill,
+                                              ),
+                                            );
+                                          },
+                                        )
+                                    )
+                                        : isNormal
+                                        ?SizedBox(
+                                        child: Image.network(
+                                          '${image}',
+                                          height: c_height * 0.6,
+                                          fit: BoxFit.fill,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return SizedBox(
+                                              child: Image.asset(
+                                                'assets/no_image.png',
+                                                height: c_height * 0.6,
+                                                fit: BoxFit.fill,
+                                              ),
+                                            );
+                                          },
+                                        )
+                                    )
+                                        : SizedBox(
+                                        child: Image.network(
+                                          '${image}',
+                                          height: c_height * 0.55,
+                                          fit: BoxFit.fill,
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return SizedBox(
+                                              child: Image.asset(
+                                                'assets/no_image.png',
+                                                height: c_height * 0.5,
+                                                fit: BoxFit.fill,
+                                              ),
+                                            );
+                                          },
+                                        )
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                        gradient: isDarkMode
+                                            ? const LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [Colors.black12, Colors.black],
+                                            stops: [.40, .75])
+                                            : const LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [Colors.white10, Colors.white],
+                                            stops: [.40, .75])
+                                    ),
+                                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            IconButton(
+                                              icon:
+                                              const Icon(Icons.arrow_back_ios_sharp),
+                                              color: isImage
+                                                  ? isDarkMode ? Colors.white : Colors.black
+                                                  : isPad
+                                                  ? isDarkMode ? Colors.white : Colors.black
+                                                  : isDarkMode ? Colors.black : Colors.black,
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) => TabPage()),
                                                 );
                                               },
+                                            ),
+                                            IconButton(
+                                              icon: const Icon(
+                                                Icons.share_outlined,
+                                                size: 30,
+                                              ),
+                                              color: isImage
+                                                  ? isDarkMode ? Colors.white : Colors.black
+                                                  : isPad
+                                                  ? isDarkMode ? Colors.white : Colors.black
+                                                  : isDarkMode ? Colors.black : Colors.black,
+                                              onPressed: () {
+                                                _onShare(context);
+                                              },
                                             )
-                                          )
-                                          : isNormal
-                                              ? SizedBox(
-                                                  child: Image.network(
-                                                  '${maps['IMAGE']}',
-                                                  height: c_height * 0.6,
-                                                  fit: BoxFit.fill,
-                                                  errorBuilder: (context, error,
-                                                      stackTrace) {
-                                                    return SizedBox(
-                                                      child: Image.asset(
-                                                        'assets/no_image.png',
-                                                        height: c_height * 0.6,
-                                                        fit: BoxFit.fill,
-                                                      ),
-                                                    );
-                                                  },
+                                          ],
+                                        ),
+                                        Container(
+                                            margin: EdgeInsets.only(top: isPad ? 500 : 400 ),
+                                            width: c_width * 0.9,
+                                            child: RichText(
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 2,
+                                              strutStyle: const StrutStyle(fontSize: 30),
+                                              text: TextSpan(children: [
+                                                TextSpan(
+                                                  text: '${title}',
+                                                  style: TextStyle(
+                                                      fontWeight: FontWeight.bold,
+                                                      fontSize: 30,
+                                                      overflow: TextOverflow.ellipsis,
+                                                      color: isDarkMode ? Colors.white : Colors.black),
                                                 )
-                                              )
-                                              : SizedBox(
-                                                  child: Image.network(
-                                                  '${maps['IMAGE']}',
-                                                  height: c_height * 0.5,
-                                                  fit: BoxFit.fill,
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return SizedBox(
-                                                      child: Image.asset(
-                                                        'assets/no_image.png',
-                                                        height: c_height * 0.5,
-                                                        fit: BoxFit.fill,
-                                                      ),
-                                                    );
-                                                  },
-                                                )
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                              gradient: isDarkMode
-                                  ? const LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [Colors.black12, Colors.black],
-                                      stops: [.35, .75])
-                                  : const LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [Colors.white10, Colors.white],
-                                      stops: [.35, .75])),
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.arrow_back_ios_sharp),
-                                    color: isImage
-                                        ? isDarkMode ? Colors.white : Colors.black
-                                        : isPad ? isDarkMode ? Colors.white : Colors.black
-                                                : isDarkMode ? Colors.black : Colors.black, // 폴드, 패드, 탭에서 이용시 앨범사진 양 옆 공간이 남아서 블랙으로 고정
-                                    onPressed: () {
-                                      Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
-                                    },
+                                              ]),
+                                            )
+                                        ),
+                                        Container(
+                                            padding: const EdgeInsets.only(right: 10),
+                                            child: Row(
+                                              children: [
+                                                Flexible(
+                                                    child: RichText(
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 2,
+                                                      strutStyle: const StrutStyle(fontSize: 17),
+                                                      text: TextSpan(children: [
+                                                        TextSpan(
+                                                          text: artist,
+                                                          style: TextStyle(
+                                                            fontSize: 17,
+                                                            color: isDarkMode ? Colors.white : Colors.black,
+                                                            overflow: TextOverflow.ellipsis,
+                                                          ),
+                                                        ),
+                                                        TextSpan(
+                                                            text: ' · ',
+                                                            style: TextStyle(
+                                                                color: isDarkMode ? Colors.grey : Colors.black.withOpacity(0.4), fontSize: 17)),
+                                                        TextSpan(
+                                                          text: album,
+                                                          style: TextStyle(
+                                                              color: isDarkMode
+                                                                  ? Colors.grey
+                                                                  : Colors.black
+                                                                  .withOpacity(0.4),
+                                                              overflow: TextOverflow.ellipsis,
+                                                              fontSize: 17),
+                                                        )
+                                                      ]),
+                                                    ))
+                                              ],
+                                            )
+                                        ),
+                                        Container(
+                                          margin: const EdgeInsets.fromLTRB(0, 10, 0, 50),
+                                          child: Row(
+                                            children: [
+                                              Container(
+                                                margin: const EdgeInsets.only(right: 20),
+                                                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                                decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(20),
+                                                    color: const Color.fromRGBO(51, 211, 180, 1)),
+                                                child: Text(
+                                                  '${date_}',
+                                                  style: const TextStyle(
+                                                      color: Colors.white),
+                                                ),
+                                              ),
+                                              Image.asset('assets/result_search.png', width: 15, color: Colors.grey),
+                                              Text(' ${count}',
+                                                  style: const TextStyle(color: Colors.grey, overflow: TextOverflow.ellipsis)),
+                                              const Text('회', style: TextStyle(color: Colors.grey))
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  IconButton(
-                                    icon: const Icon(Icons.share_outlined, size: 30),
-                                    color: isImage
-                                        ? isDarkMode ? Colors.white : Colors.black
-                                        : isPad
-                                            ? isDarkMode ? Colors.white : Colors.black
-                                            : isDarkMode ? Colors.black : Colors.black,
-                                    onPressed: () async {
-                                      await MyApp.analytics.logEvent(name: 'ShareButton');
-                                      _onShare(context);
-                                    },
-                                  )
                                 ],
                               ),
                               Container(
-                                  margin: EdgeInsets.only(top: isPad ? 500 : 400),
-                                  width: c_width * 0.9,
-                                  child: RichText(
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
-                                    strutStyle: const StrutStyle(fontSize: 30),
-                                    text: TextSpan(children: [
-                                      TextSpan(
-                                        text: '${maps['TITLE']}',
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 30,
-                                            overflow: TextOverflow.ellipsis,
-                                            color: isDarkMode ? Colors.white : Colors.black
+                                  margin: const EdgeInsets.only(right: 20, left: 20),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        color: isDarkMode ? Colors.black : Colors.white,
+                                        padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+                                        child: const Text('최신 방송 재생정보',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20)),
+                                      ),
+                                      SizedBox(
+                                          height: 250,
+                                          child: Container(
+                                              child: isExist
+                                                  ? Center(
+                                                  child: Text('최신 방송 재생정보가 없습니다.',
+                                                      style: TextStyle(
+                                                          color: isDarkMode ? Colors.white : Colors.black,
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 20))
+                                              )
+                                                  : Row(
+                                                children: [_listView(programs)],
+                                              )
+                                          )
+                                      ),
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                              margin: const EdgeInsets.only(bottom: 30),
+                                              child: const Text(
+                                                '프리즘차트',
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 20),
+                                              )
+                                          ),
+                                          isCNTS
+                                              ? ChartContainer(
+                                            color: isDarkMode
+                                                ? Colors.black
+                                                : Colors.white,
+                                            chart: line_chart(song_cnts),
+                                          )
+                                              : const SizedBox(
+                                              height: 200,
+                                              child: Center(
+                                                  child: Text('차트 정보가 없습니다.',
+                                                      style: TextStyle(
+                                                          fontWeight: FontWeight.bold,
+                                                          fontSize: 20))))
+                                        ],
+                                      ),
+                                      Container(
+                                        margin:
+                                        const EdgeInsets.only(left: 00, right: 10),
+                                        decoration: BoxDecoration(
+                                            color: isDarkMode
+                                                ? const Color.fromRGBO(42, 42, 42, 1)
+                                            // : const Color.fromRGBO(239, 239, 239, 1)),
+                                                : const Color.fromRGBO(250, 250, 250, 1)
+                                        ),
+                                        height: 100,
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset('assets/result_search.png',
+                                                width: 20),
+                                            Container(
+                                              margin: const EdgeInsets.only(left: 10, right: 10),
+                                              child: Text('총 검색 : ',
+                                                  style: TextStyle(
+                                                      fontSize: 17,
+                                                      color: isDarkMode
+                                                          ? const Color.fromRGBO(
+                                                          151, 151, 151, 1)
+                                                          : Colors.black)),
+                                            ),
+                                            Text('${count}',
+                                                style: const TextStyle(fontSize: 17)
+                                            ),
+                                            const Text('회',
+                                                style: TextStyle(fontSize: 17)
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          _onBackKey();
+                                        },
+                                        child: Container(
+                                          padding:
+                                          const EdgeInsets.symmetric(horizontal: 100),
+                                          height: 70,
+                                          margin:
+                                          const EdgeInsets.fromLTRB(0, 30, 10, 40),
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  width: 1,
+                                                  color: isDarkMode
+                                                      ? Colors.grey.withOpacity(0.3)
+                                                      : Colors.black.withOpacity(0.1)
+                                              )
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Container(
+                                                  padding:
+                                                  const EdgeInsets.only(right: 10),
+                                                  child: const Text(
+                                                    '홈으로',
+                                                    style: TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 16
+                                                    ),
+                                                  )
+                                              ),
+                                              Icon(
+                                                Icons.arrow_forward_ios_sharp,
+                                                size: 17,
+                                                color: isDarkMode
+                                                    ? const Color.fromRGBO(125, 125, 125, 1)
+                                                    : const Color.fromRGBO(208, 208, 208, 1),
+                                              )
+                                            ],
+                                          ),
                                         ),
                                       )
-                                    ]),
+                                    ],
                                   )
-                              ),
-                              Container(
-                                  padding: const EdgeInsets.only(right: 10),
-                                  child: Row(
-                                    children: [
-                                      Flexible(
-                                          child: RichText(
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 2,
-                                        strutStyle: const StrutStyle(fontSize: 17),
-                                        text: TextSpan(children: [
-                                          TextSpan(
-                                            text: isArtistNull ? 'Various Artist' : maps['ARTIST'],
-                                            style: TextStyle(
-                                              fontSize: 17,
-                                              color: isDarkMode ? Colors.white : Colors.black,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          TextSpan(
-                                              text: ' · ',
-                                              style: TextStyle(
-                                                  color: isDarkMode ? Colors.grey : Colors.black.withOpacity(0.4),
-                                                  fontSize: 17
-                                              )
-                                          ),
-                                          TextSpan(
-                                            text: isAlbumNull ? 'Various Album' : maps['ALBUM'],
-                                            style: TextStyle(
-                                                color: isDarkMode ? Colors.grey : Colors.black.withOpacity(0.4),
-                                                overflow: TextOverflow.ellipsis, fontSize: 17
-                                            ),
-                                          )
-                                        ]),
-                                      )
-                                    )],
-                                  )),
-                              Container(
-                                margin: const EdgeInsets.fromLTRB(0, 10, 0, 50),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      margin: const EdgeInsets.only(right: 20),
-                                      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                      decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(20),
-                                          color: const Color.fromRGBO(51, 211, 180, 1)
-                                      ),
-                                      child: Text(
-                                        '${maps['date']}',
-                                        style: const TextStyle(color: Colors.white),
-                                      ),
-                                    ),
-                                    Image.asset('assets/result_search.png',
-                                        width: 15, color: Colors.grey
-                                    ),
-                                    Text(' ${maps['count']}',
-                                        style: const TextStyle(
-                                            color: Colors.grey,
-                                            overflow: TextOverflow.ellipsis
-                                        )
-                                    ),
-                                    const Text('회', style: TextStyle(color: Colors.grey))
-                                  ],
-                                ),
-                              ),
+                              )
                             ],
-                          ),
-                        ),
-                      ],
+                          )
+                      ),
                     ),
-                    Container(
-                        margin: const EdgeInsets.only(right: 20, left: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              color: isDarkMode ? Colors.black : Colors.white,
-                              padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
-                              child: const Text('최신 방송 재생정보',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)
-                              ),
-                            ),
-                            SizedBox(
-                                height: 250,
-                                child: Container(
-                                    child: isExist
-                                        ? Center(
-                                            child: Text('최신 방송 재생정보가 없습니다.',
-                                                style: TextStyle(
-                                                    color: isDarkMode ? Colors.white : Colors.black,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 20
-                                                )
-                                            )
-                                        )
-                                        : Row(children: [_listView(programs)])  // Row로 감싸지 않으면 에러
-                                )
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                    margin: const EdgeInsets.only(bottom: 30),
-                                    child: const Text('프리즘차트',
-                                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                                    )
-                                ),
-                                CNTS
-                                    ? ChartContainer(   //  lib/chart/chart_container.dart
-                                        color: isDarkMode ? Colors.black : Colors.white,
-                                        chart: line_chart(song_cnts),
-                                      )
-                                    : const SizedBox(
-                                        height: 200,
-                                        child: Center(
-                                            child: Text('차트 정보가 없습니다.',
-                                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)
-                                            )
-                                        )
-                                )
-                              ],
-                            ),
-                            Container(
-                              margin: const EdgeInsets.only(right: 10),
-                              decoration: BoxDecoration(
-                                  color: isDarkMode
-                                      ? const Color.fromRGBO(42, 42, 42, 1)
-                                      : const Color.fromRGBO(250, 250, 250, 1)
-                              ),
-                              height: 100,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Image.asset('assets/result_search.png', width: 20),
-                                  Container(
-                                    margin: const EdgeInsets.only(left: 10, right: 10),
-                                    child: Text('총 검색 : ',
-                                        style: TextStyle(
-                                            fontSize: 17,
-                                            color: isDarkMode ? const Color.fromRGBO(151, 151, 151, 1) : Colors.black
-                                        )
-                                    ),
-                                  ),
-                                  Text('${maps['count']}', style: const TextStyle(fontSize: 17)),
-                                  const Text('회', style: TextStyle(fontSize: 17))
-                                ],
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                _onBackKey();
-                                },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 100),
-                                height: 70,
-                                margin: const EdgeInsets.fromLTRB(0, 30, 10, 40),
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        width: 1,
-                                        color: isDarkMode ? Colors.grey.withOpacity(0.3) : Colors.black.withOpacity(0.1)
-                                    )
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Container(
-                                        padding: const EdgeInsets.only(right: 10),
-                                        child: const Text('홈으로',
-                                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                        )
-                                    ),
-                                    Icon(
-                                      Icons.arrow_forward_ios_sharp,
-                                      size: 17,
-                                      color: isDarkMode
-                                          ? const Color.fromRGBO(125, 125, 125, 1)
-                                          : const Color.fromRGBO(208, 208, 208, 1),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            )
-                          ],
-                        )
-                    )
-                  ],
-                )
-            ),
-          ),
+                  ),
+                );
+              }
+            }
         ),
-      ),
-    );
+      );
   }
 
   Widget _listView(programs) {
@@ -589,6 +769,7 @@ class _Result extends State<Result> {
           itemCount: programs == null ? 0 : programs.length,
           itemBuilder: (context, index) {
             final program = programs[index];
+
             String programDate = program['F_DATE'];
             String parseProgramDate = DateFormat('yyyy.MM.dd').format(DateTime.parse(programDate)).toString();
 
@@ -606,7 +787,8 @@ class _Result extends State<Result> {
                           width: 3,
                           color: isDarkMode
                               ? const Color.fromRGBO(189, 189, 189, 1)
-                              : Colors.black.withOpacity(0.3),
+                          // : const Color.fromRGBO(228, 228, 228, 1),
+                              :Colors.black.withOpacity(0.3),
                         ),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -614,19 +796,20 @@ class _Result extends State<Result> {
                         borderRadius: BorderRadius.circular(8),
                         child: SizedBox.fromSize(
                           child: Image.network(
+                            // program['F_IMAGE'],
                             program['F_LOGO'],
                             width: 140,
                             height: 140,
-                            errorBuilder: (context, stackTrace, error) {  // program['F_LOGO'] 없을시 no_image return
+                            errorBuilder: (context, stackTrace, error) {
                               return SizedBox(
                                   width: 140,
                                   height: 140,
-                                  child: Image.asset('assets/no_image.png')
-                              );
+                                  child: Image.asset('assets/no_image.png'));
                             },
                           ),
                         ),
-                      )),
+                      )
+                  ),
                   Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -646,22 +829,39 @@ class _Result extends State<Result> {
                                   overflow: TextOverflow.ellipsis),
                             ),
                           ),
-                          
-                          /**
-                           * 방송국 명 Text 로 찍지만 추후 프로그램 이미지 들어오면 F_LOGO 로 바뀔가능성 있음
-                           * 로고로 바뀔시 위 program['F_LOGO'] 처럼 errorBuilder 사용하여 로고 없을시 CL_NM return 해줘야함
-                           */
                           Container(
                               margin: const EdgeInsets.only(left: 10),
-                              width: 65, height: 22,
+                              width: 65,
+                              height: 22,
                               child: Text(program['CL_NM'],
                                   style: TextStyle(
                                       fontSize: 16,
                                       overflow: TextOverflow.ellipsis,
                                       fontWeight: FontWeight.bold,
-                                      color: isDarkMode ? Colors.white : Colors.black
-                                  )
+                                      color: isDarkMode
+                                          ? Colors.white
+                                          : Colors.black)
                               )
+                            // child: Image.network(
+                            //   program['F_LOGO'],
+                            //   width: 50,
+                            //   height: 22,
+                            //   errorBuilder: (context, error, stackTrace) {
+                            //     return SizedBox(
+                            //         width: 65,
+                            //         height: 22,
+                            //         child: Text(program['CL_NM'],
+                            //             style: TextStyle(
+                            //                 fontSize: 16,
+                            //                 overflow: TextOverflow.ellipsis,
+                            //                 fontWeight: FontWeight.bold,
+                            //                 color: isDarkMode
+                            //                     ? Colors.white
+                            //                     : Colors.black)
+                            //         )
+                            //     );
+                            //   },
+                            // ),
                           )
                         ]),
                         Container(
@@ -676,18 +876,17 @@ class _Result extends State<Result> {
                                     style: const TextStyle(
                                         overflow: TextOverflow.ellipsis,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 12)
-                                ),
+                                        fontSize: 12)),
                               ),
-                              Text(
-                                  parseProgramDate, // 프로그램 방송날짜
-                                  style: TextStyle(color: isDarkMode ? Colors.grey.withOpacity(0.8) : Colors.black.withOpacity(0.3))
-                              ),
+                              Text(parseProgramDate,
+                                  style: TextStyle(
+                                      color: isDarkMode
+                                          ? Colors.grey.withOpacity(0.8)
+                                          : Colors.black.withOpacity(0.3))),
                             ],
                           ),
                         )
-                      ]
-                  )
+                      ])
                 ],
               )
             ]);
@@ -703,45 +902,44 @@ class _Result extends State<Result> {
         });
   }
 
-  /*
-   *  Firebase DynamicLink 에서 링크 변경시,
-   *  Remote Config 에 등록해놓은 shareUrl 변수 설정 후 게시하면 앱 버전 업데이트 없이 링크 변경 가능
-   */
   void _onShare(BuildContext context) async {
-    // final box = context.findRenderObject() as RenderBox?; // iPad에서 사용
-
+    final box = context.findRenderObject() as RenderBox?;
     if (Platform.isIOS) {
       await Share.share(
-        '${url}ios',
-          sharePositionOrigin: Rect.fromLTRB(0, 0, MediaQuery.of(context).size.width, MediaQuery.of(context).size.height * 0.5),  // iPad에서 박스위치, 크기 지정해줘야 Share 박스 나옴
+        // 'www.oneidlab.kr/app_check.html',
+          'https://oneidlab.page.link/prizmios',
+          subject: 'Prizm',
+          sharePositionOrigin:
+          Rect.fromLTRB(0, 0, MediaQuery.of(context).size.width, MediaQuery.of(context).size.height * 0.5)
       );
     } else if (Platform.isAndroid) {
-      await Share.share(url, subject: 'Prizm');
+      await Share.share('https://oneidlab.page.link/prizm', subject: 'Prizm');
     }
-    // box!.localToGlobal(Offset.zero) & box.size;
   }
 
   late String text;
 
-  Widget bottomTitleWidgets(double value, TitleMeta meta) { // 차트 x축 title
+  Widget bottomTitleWidgets(double value, TitleMeta meta) {
     text = '';
 
-    try { // 현재 월 기준 이전달부터 1년의 MM 을 계산해서 출력
+    try {
       int i = 1;
       dateList = [];
       for (i; i < 13; i++) {
         dateTime = DateTime(now.year, now.month - i, 1);
         date = DateFormat('MM').format(dateTime);
-        // year = DateFormat('yy').format(now);
-        dateList.add(date); // MM 만 뽑아 dateList 에 넣기
+        year = DateFormat('yy').format(now);
+// print(dateTime);
+
+        dateList.add(date);
       }
     } catch (e) {
-      rethrow;
+      print('bottom title : $e');
     }
     reversedDate = [];
     reversedDate = List.from(dateList.reversed);
 
-    switch (value.toInt()) {  // double 로 넣은 mon 을 int 로 바꿔 인덱스로 x축 대입
+    switch (value.toInt()) {
       case 1:
         text = reversedDate[0];
         break;
@@ -782,7 +980,7 @@ class _Result extends State<Result> {
     return SideTitleWidget(axisSide: meta.axisSide, child: Text(text));
   }
 
-  Widget line_chart(song_cnts) {  //차트 위젯
+  Widget line_chart(song_cnts) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     List<FlSpot> FlSpotData = [];
     FlSpotData.addAll(FlSpotDataAll);
@@ -793,7 +991,9 @@ class _Result extends State<Result> {
           horizontalLines: [
             HorizontalLine(
                 y: 0,
-                color: isDarkMode ? Colors.grey.withOpacity(0.6) : Colors.grey.withOpacity(0.3)
+                color: isDarkMode
+                    ? Colors.grey.withOpacity(0.6)
+                    : Colors.grey.withOpacity(0.3)
             )
           ],
         ),
@@ -803,17 +1003,19 @@ class _Result extends State<Result> {
             getDrawingHorizontalLine: (value) {
               return FlLine(
                   strokeWidth: 1,
-                  color: isDarkMode ? Colors.grey.withOpacity(0.6) : Colors.grey.withOpacity(0.3)
+                  color: isDarkMode
+                      ? Colors.grey.withOpacity(0.6)
+                      : Colors.grey.withOpacity(0.3)
               );
             },
-            drawVerticalLine: false, // Y축 라인 false
+            drawVerticalLine: false,
             drawHorizontalLine: true,
             horizontalInterval: minCnt ? avgY / 8 : 30
         ),
         minX: 1,
         minY: 0,
         maxX: 12,
-        maxY: double.parse((listY.last).toString()) + 100,  // Y 최대값에 +100만큼 축 생성
+        maxY: double.parse((listY.last).toString()) + 100,
         lineBarsData: [
           LineChartBarData(
               dotData: FlDotData(
@@ -822,7 +1024,8 @@ class _Result extends State<Result> {
                     FlDotCirclePainter(
                         radius: 3.0,
                         color: const Color.fromRGBO(51, 211, 180, 1),
-                        strokeColor: isDarkMode ? Colors.white : Colors.grey.shade200,
+                        strokeColor:
+                        isDarkMode ? Colors.white : Colors.grey.shade200,
                         strokeWidth: 5.0
                     ),
               ),
@@ -834,15 +1037,24 @@ class _Result extends State<Result> {
               isStrokeJoinRound: true,
               belowBarData: BarAreaData(
                 show: true,
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: isDarkMode
-                      ? [const Color.fromRGBO(51, 215, 180, 1), Colors.white10]
-                      : [const Color.fromRGBO(51, 215, 180, 1), Colors.white24]
+                gradient: isDarkMode
+                    ? const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color.fromRGBO(51, 215, 180, 1),
+                      Colors.white12
+                    ]
+                )
+                    : const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color.fromRGBO(51, 215, 180, 1),
+                      Colors.white24
+                    ]
                 ),
-              ),
-              spots: FlSpotData
+              ), spots: FlSpotData
           )
         ],
         titlesData: FlTitlesData(
@@ -860,10 +1072,11 @@ class _Result extends State<Result> {
                     getTitlesWidget: bottomTitleWidgets
                 )
             ),
-            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false))
+            leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)
+            )
         ),
-         lineTouchData: LineTouchData(enabled: true)
-      )
+        lineTouchData: LineTouchData(enabled: true)
+    )
     );
     return result;
   }

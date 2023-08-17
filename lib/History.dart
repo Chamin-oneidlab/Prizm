@@ -66,7 +66,7 @@ class _History extends State<History> {
     _deviceId = await PlatformDeviceId.getDeviceId;
 
     try {
-      http.Response response = await http.get(Uri.parse('http://${MyApp.history}/json?uid=$uid'));
+      http.Response response = await http.get(Uri.parse('https://${MyApp.history}/json?uid=$uid'));
       String jsonData = response.body;
       song_info = jsonDecode(jsonData.toString());
       original = song_info;
@@ -745,7 +745,7 @@ class _History extends State<History> {
                                  * url 뒤에 uid 값과 songId 값을 보내 해당 곡만 삭제처리
                                  * proc=del 을 같이 보내야 삭제 없을시 history 내역 json
                                  */
-                                Response response = await http.get(Uri.parse('http://${MyApp.history}/json?uid=$uid&id=$_songid&proc=del'));
+                                Response response = await http.get(Uri.parse('https://${MyApp.history}/json?uid=$uid&id=$_songid&proc=del'));
                                 if (response.statusCode == 200) {
                                   showToast();
                                 } else {

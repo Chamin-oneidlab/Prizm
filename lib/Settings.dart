@@ -353,7 +353,7 @@ class _Settings extends State<Settings> {
                                                              * history 가져오는 json과 같지만 id값 없이 uid만 가지고 전체삭제처리
                                                              * url 관련 문제가 있거나 문의사항 있을때는 임차장님께 문의
                                                              */
-                                                            Response response = await http.get(Uri.parse('http://${MyApp.history}?uid=$uid&proc=del'));
+                                                            Response response = await http.get(Uri.parse('https://${MyApp.history}?uid=$uid&proc=del'));
                                                             if (response.statusCode == 200) {
                                                               showToast();
                                                             } else {

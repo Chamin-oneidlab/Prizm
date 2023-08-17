@@ -35,11 +35,12 @@ typedef int64_t __int64;
 #define _In(s, x, e) ((s)<=(x) && (x)<(e))
 #define _ABS(a) ((a)<=0 ? -(a) : (a))
 
-#define fpVer 251
+
+#define fpVer "vi"
 #define srate 22050
-#define fftN 4096
-#define fftHop 2205
-#define fDim 64
-#define Fps (srate/fftHop)
+#define fftN 2048
+#define fftHop 1470
+#define Fps (srate/fftHop) //15
+#define qLen (37)
 
 #endif 

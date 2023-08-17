@@ -11,79 +11,70 @@ typedef struct AudioDNA {
 		__int64 f[2];
 	} __f128;
 
-    __int64* F;
-	__f128* E;
+    __int64* H;
+	__f128* F;
 	int N;
 
 	AudioDNA() { memset(this, 0, sizeof(AudioDNA)); }
 
 	void free() {
-		_Delete(E);
+		_Delete(H);
         _Delete(F);
 	}
 	int write(char* buf) {
-		char* p=buf;
-		*p=fpVer; p++;
-		memcpy(p, &N, 4); p+=4;
-        memcpy(p, F, N*8); p+=N*8;
-        memcpy(p, E, N*8*2); p+=N*8*2;
+		char* p= buf;
+		memcpy(p, fpVer, 2); p+=2;
+		memcpy(p, &N, 4);	p+=4;
+		memcpy(p, H, N*8);  p+=N*8;
+		memcpy(p, F, N*16); p+=N*16;
 		return (int)(p-buf);
 	}
-	int extract(short* wav, int len) {
-		static MEL<fftN/2, srate/2, fDim> mel;
-        static MEL<fftN, srate, fDim*2> mel2;
+	int extract(short* pcm, int len) {
+		FFT<fftN> fft;
+		static MEL<fftN/2, 16000, 64> mel;
+		N= (len-fftN)/fftHop+1;
+		H= new __int64[N];
+		F= new __f128[N];
+		for (int i=0; i<N; i++) {
+			float f0[fftN];
+			for (int j=0, p= i*fftHop; j<fftN; j++, p++)
+				f0[j]= pcm[p];
+			FFT<fftN>::hanning(f0);
+			double f1[fftN];
+			fft.transform(f0, f1);
 
-        N= (len-fftN)/fftHop;
-        F= new __int64[N];
-        E= new __f128[N];
+			double f2[64];
+			mel.conv(f1, f2);
 
-        for (int i=0, p=0; i<N; i++, p+=fftHop) {
-            float f0[fftN];
-            for (int y=0; y<fftN; y++)
-                f0[y]= wav[p+y];
-            FFT<fftN>::hanning(f0);
-            FFT<fftN> fft;
-            double f1[fftN];
-            fft.transform(f0, f1);
-
-            double f2[fDim*2];
-            mel.conv(f1, f2);
-            float f3[fDim*2];
-            for (int y=0; y<fDim; y++)
-                f3[y] = (float)(10.f*log10(f2[y]+1));
-            to_f(f3, F[i]);
-
-            mel2.conv(f1, f2);
-            for (int y=0; y<fDim*2; y++)
-                f3[y] = (float)(10.f*log10(f2[y]+1));
-            to_e(f3, E[i]);
-        }
-        return 1+4+ N*8+ N*8*2;
+			float f3[64];
+			for (int j=0; j<64; j++) {
+				double t= f2[j];
+				f3[j]= (float)(10.f*log10(t+1));
+			}
+			for (int j=0; j<64-1; j++)
+				f3[j] = (f3[j+1]-f3[j]);
+			f3[63]= 0;
+			_extract(f3, H[i], F[i]);
+		}
+		return 2+4+ 8*N+ 16*N;
 	}
-private:
-    static void to_f(float f[fDim], __int64& w) {
-        w=0;
-        for (int y=0; y<fDim-1; y++) {
-            w <<= 1;
-            float d= f[y] - f[y+1];
-            w |= d>0 ? 1 : 0;
-        }
-    }
-    static void to_e(float f[fDim*2], __f128& w) {
-        __int64 w0=0, w1=0, w2=0, w3=0;
-        int y=0;
-        for (; y<fDim; y++) {
-            w0 <<= 1;
-            float d= f[y] - f[y+1];
-            w0 |= d>0 ? 1 : 0;
-        }
-        for (; y<fDim*2-1; y++) {
-            w1 <<= 1;
-            float d= f[y] - f[y+1];
-            w1 |= d>0 ? 1 : 0;
-        }
-        w.f[0]= w0, w.f[1]=w1;
-    }
+	void _extract(float M[64], __int64& h, __f128& f) {
+		__int64 v=0;
+		for (int i=0; i<64; i++) {
+			v<<= 1;
+			v|= M[i]>0;
+		}
+		h= v;
+		float zt= 2;
+		for (int i=0, y=0; i<2; i++) {
+			__int64 v=0;
+			for (int j=0; j<32; j++, y++) {
+				v <<= 2;
+				v |= M[y] >zt ? 2 : M[y]> -zt ? 1 : 0;
+			}
+			f.f[i]= v;
+		}
+	}
 } AudioDNA;
 
 #endif // _dna_h__

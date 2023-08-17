@@ -1,5 +1,6 @@
 import 'dart:async';
 //1544-7556
+import 'package:Prizm/Watch_ReSearch.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:Prizm/Home.dart';
 import 'package:Prizm/vmidc.dart';
@@ -19,13 +20,14 @@ class _NotFound extends State<NotFound> {
     await MyApp.analytics.logEvent(name: 'NotFound');
   }
 
+  late dynamic _background = const ColorFilter.mode(Colors.transparent, BlendMode.clear);
   final VMIDC _vmidc = VMIDC();
   String _connectionStatus = 'Unknown';
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   final Column _textColumn_light = Column(children: [
-    const Text('검색 결과 없음',
+    const Text('검색 결과 없음.',
         style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black)
     ),
     Text('노래를 인식할 수 없습니다.',
@@ -34,12 +36,22 @@ class _NotFound extends State<NotFound> {
   ]);
 
   final Column _textColumn_dark = Column(children: const [
-    Text('검색 결과 없음',
+    Text('검색 결과 없음.',
         style: TextStyle(
             fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white)
     ),
     Text('노래를 인식할 수 없습니다.', style: TextStyle(fontSize: 17, color: Colors.grey)
     ),
+  ]);
+
+  final Column _textColumn_light_w = Column(children: [
+    const Text('검색된 음악이 없습니다.',
+        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black)
+    ),
+  ]);
+
+  final Column _textColumn_dark_w = Column(children: const [
+    Text('검색된 음악이 없습니다.', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
   ]);
 
   @override
@@ -61,10 +73,42 @@ class _NotFound extends State<NotFound> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     double c_height = MediaQuery.of(context).size.height;
     double c_width = MediaQuery.of(context).size.width;
-    if (_connectionStatus.endsWith('none') == true) {
+    if (_connectionStatus.endsWith('none') == true&&!MyApp.isWatch) {
       NetworkToast();
     }
-    return WillPopScope(
+    return MyApp.isWatch?Container(
+      // height: double.infinity,
+      //   width: double.infinity, //
+        color: const Color.fromRGBO(244, 245, 247, 1),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            isDarkMode?_textColumn_dark_w:_textColumn_light_w,
+            Center(
+              child: IconButton(
+                  icon:Image.asset('assets/_prizm.png'),
+                  iconSize: 110,
+                  onPressed: () async {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
+                  }
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
+              },
+              child: const Text(
+                '다시 검색하기',
+                style: TextStyle(
+                  color: Colors.lightBlueAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        )
+    ):WillPopScope(
         onWillPop: () async {
           return _onBackKey();
         },
@@ -99,33 +143,33 @@ class _NotFound extends State<NotFound> {
                     ? const Color.fromRGBO(47, 47, 47, 1)
                     : const Color.fromRGBO(244, 245, 247, 1),
                 child:
-                    Column(mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                  Container(
-                      height: c_height * 0.59,
-                      padding: const EdgeInsets.only(bottom: 50),
-                      child: Center(
-                          child: Column(children: <Widget>[
-                        Center(
-                            child: Container(
-                                padding: const EdgeInsets.only(bottom: 20),
-                                child: isDarkMode ? _textColumn_dark : _textColumn_light
-                            )
-                        ),
-                        IconButton(
-                          icon: isDarkMode
-                              ? Image.asset('assets/_prizm_dark.png')
-                              : Image.asset('assets/_prizm.png'),
-                          padding: const EdgeInsets.only(bottom: 30),
-                          iconSize: 220,
-                          onPressed: () {
-                            _vmidc.stop();
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
-                          },
-                        )
-                      ]))
-                  )
-                ])
+                Column(mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                          height: c_height * 0.59,
+                          padding: const EdgeInsets.only(bottom: 50),
+                          child: Center(
+                              child: Column(children: <Widget>[
+                                Center(
+                                    child: Container(
+                                        padding: const EdgeInsets.only(bottom: 20),
+                                        child: isDarkMode ? _textColumn_dark : _textColumn_light
+                                    )
+                                ),
+                                IconButton(
+                                  icon: isDarkMode
+                                      ? Image.asset('assets/_prizm_dark.png')
+                                      : Image.asset('assets/_prizm.png'),
+                                  padding: const EdgeInsets.only(bottom: 30),
+                                  iconSize: 220,
+                                  onPressed: () {
+                                    _vmidc.stop();
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
+                                  },
+                                )
+                              ]))
+                      )
+                    ])
             )
         )
     );

@@ -76,6 +76,7 @@ class MyApp extends StatelessWidget {
   static var privacy;
   static var terms;
   static var isWatch;
+  static var vmidc;
 
   @override
   Widget build(BuildContext context) {
@@ -148,10 +149,11 @@ class _TabPageState extends State<TabPage> {
      *  평소에는 인앱 기본값 으로 설정해놔야 걸리지 않고 넘어감
      */
 
-    // MyApp.appVersion = appVersion; //TODO:: 이거 풀어야함
-    // if (appVersion != packageVersion) {
-    //   showDefaultDialog();
-    // }
+    MyApp.appVersion = appVersion; //TODO:: 이거 풀어야함
+    if (appVersion != packageVersion) {
+      showDefaultDialog();
+    }
+
   }
   
   Future<void> initPlatformState() async {
@@ -270,7 +272,7 @@ class _TabPageState extends State<TabPage> {
 
   fetchData() async { // przm.php 에서 받아오는 json 최상위에서 정의
     try {
-      http.Response response = await http.get(Uri.parse('http://www.przm.kr/przm.php'));
+      http.Response response = await http.get(Uri.parse('https://www.przm.kr/przm.php'));
       String jsonData = response.body;
       Map<String, dynamic> url = jsonDecode(jsonData.toString());
       setState(() {});
@@ -280,11 +282,11 @@ class _TabPageState extends State<TabPage> {
       MyApp.ranks = url['ranks'];
       MyApp.privacy = url['privacy'];
       MyApp.terms = url['terms'];
+      MyApp.vmidc = url['vmidc'];
     } catch (e) {
       rethrow;
     }
   }
-
 
   @override
   void initState() {
@@ -326,12 +328,16 @@ class _TabPageState extends State<TabPage> {
         SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
     return WillPopScope(
-        onWillPop: () {
-          if (_selectedIndex == 1 && pageController.offset == _deviceData / 3) {
-            return _onBackKey();//디바이스 widthPx / 3 의 값이 page offset 값과 같고 index 1번일떄 종료 dialog
-          } else {
-            return _backToHome();
+        onWillPop: () async{
+          if(MyApp.isWatch) return true;
+          if(!MyApp.isWatch){
+            if (_selectedIndex == 1 && pageController.offset == _deviceData / 3) {
+              return _onBackKey();//디바이스 widthPx / 3 의 값이 page offset 값과 같고 index 1번일떄 종료 dialog
+            } else {
+              return _backToHome();
+            }
           }
+          return false;
         },
         child: Scaffold(
           body: buildPageView(),

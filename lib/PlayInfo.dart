@@ -56,8 +56,10 @@ class _PlayInfo extends State<PlayInfo> {
     if(!mounted) return;
 
     http.Response response = await http.get(
-      Uri.parse('http://${MyApp.search}/json?id=${widget.song_id}')
+      Uri.parse('https://${MyApp.search}/json?id=${widget.song_id}')
     );
+    print("********");
+    print('https://${MyApp.search}/json?id=${widget.song_id}');
 
     statuscode = response.statusCode;
     try {
@@ -91,8 +93,10 @@ class _PlayInfo extends State<PlayInfo> {
   Widget build(BuildContext context) {
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: [SystemUiOverlay.bottom]);
-    final isExistTV = info.isEmpty;
-    final isExistRadio = info_radio.isEmpty;
+    final isExistTV = info.isEmpty||info == null;
+    final isExistRadio = info_radio.isEmpty||info_radio==null;
+    print("!@#####");
+    print(info_radio);
 
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
@@ -263,7 +267,7 @@ class _PlayInfo extends State<PlayInfo> {
 
   loading() {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    if(timer.isActive) {
+    if(timer.isActive) { //TODO::
       return Column(
         children: [
           Container(
