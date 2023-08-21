@@ -57,16 +57,12 @@ class VMIDC {
     _sock.listen((Uint8List msg) async {
       print(msg);
       if (msg[0] == 1) { //search
-        print("#1");
         if (msg[1] != 1) { //true
-          print("#2");
           toStream.add(['error']);
         }
         else {
-          print("#3");
           int n= msg[2];
           if (n==1) {
-            print("#4");
             int score= msg[3];
             _score = score;
             _id = String.fromCharCodes(msg, 4, msg.length);
@@ -108,6 +104,7 @@ class VMIDC {
     _id = null;
     _score = null;
     print('vmid.start()');
+    print(MyApp.vmidc);
     await _recorder.startRecorder(
       toStream: recCtrl.sink,
       codec: Codec.pcm16,

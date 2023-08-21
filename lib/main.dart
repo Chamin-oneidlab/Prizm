@@ -171,6 +171,8 @@ class _TabPageState extends State<TabPage> {
       deviceData = androidDevice.displayMetrics.widthPx; //화면 widthPx
       deviceDataHeight = androidDevice.displayMetrics.heightPx; //double로 받아옴
       deviceDataHeight<1500? MyApp.isWatch = true:MyApp.isWatch = false;
+      print("ISWATCH HERE :::");
+      print(MyApp.isWatch);
     } else if (Platform.isIOS) {
       var iosInfo = await deviceInfoPlugin.iosInfo;
       deviceIdentifier = iosInfo.identifierForVendor!;
@@ -283,9 +285,11 @@ class _TabPageState extends State<TabPage> {
       MyApp.privacy = url['privacy'];
       MyApp.terms = url['terms'];
       MyApp.vmidc = url['vmidc'];
+      print(MyApp.vmidc);
     } catch (e) {
       rethrow;
     }
+
   }
 
   @override
@@ -327,7 +331,9 @@ class _TabPageState extends State<TabPage> {
     SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
-    return WillPopScope(
+    return MyApp.isWatch?Scaffold(
+      body: buildPageView(),
+    ):WillPopScope(
         onWillPop: () async{
           if(MyApp.isWatch) return true;
           if(!MyApp.isWatch){
@@ -375,6 +381,7 @@ class _TabPageState extends State<TabPage> {
 /* =======================================================*/
 
   Future<bool> _onBackKey() async {
+    print("run onBackKey Function");
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return await showDialog(
       context: context,

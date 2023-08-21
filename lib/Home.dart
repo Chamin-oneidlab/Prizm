@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'Watch_Swipe_Controller.dart';
@@ -9,6 +10,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'Settings.dart';
 import 'main.dart';
+import 'package:http/http.dart' as http;
 
 
 /*
@@ -81,24 +83,28 @@ class _Home extends State<Home> {
 
   @override
   void initState() {
-    logSetscreen();
-    Permission.microphone.request();
-    initConnectivity();
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    _vmidc.init(ip: "${MyApp.vmidc}", port: 8551, sink: _ctrl.sink).then((ret) {   //ip, port 번호 변경시 여기만 변경
-      if (!ret) {
-        print('server error');
-      } else {
-        _ctrl.stream.listen((data) async {
-          if (data.length == 2) {
-            _id = '${data[0]} (${data[1]})'; // TODO: 5-1
-          } else {
-            _id = 'error';
-          }
-          await _vmidc.stop();
-          setState(() {});
-        });
-      }
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      logSetscreen();
+      Permission.microphone.request();
+      initConnectivity();
+      //219.250.104.102
+      _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+      print("IPHERE"+MyApp.vmidc);
+      _vmidc.init(ip: "${MyApp.vmidc}", port: 8551, sink: _ctrl.sink).then((ret) {//ip, port 번호 변경시 여기만 변경
+        if (!ret) {
+          print('server error');
+        } else {
+          _ctrl.stream.listen((data) async {
+            if (data.length == 2) {
+              _id = '${data[0]} (${data[1]})'; // TODO: 5-1
+            } else {
+              _id = 'error';
+            }
+            await _vmidc.stop();
+            setState(() {});
+          });
+        }
+      });
     });
     super.initState();
   }
@@ -321,6 +327,10 @@ class _Home extends State<Home> {
   }
 
   Future<bool> _onBackKey() async {
+    print("run onBackKey Function");
+    if(_vmidc.isRunning()){
+      _vmidc.stop();
+    }
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     double c_width = MediaQuery.of(context).size.width;
     return await showDialog(
