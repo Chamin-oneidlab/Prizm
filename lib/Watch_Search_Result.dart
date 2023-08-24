@@ -36,33 +36,33 @@ class _Watch_Result extends State<Watch_Result> {
   }
 
   Future<String> fetchData() async {
-    String? uid;
-    var deviceInfoPlugin = DeviceInfoPlugin();
-
-    try {
-      if (Platform.isAndroid) {
-        uid = await PlatformDeviceId.getDeviceId;
-        print('uid >> $uid');
-      } else if (Platform.isIOS) {
-        var iosInfo = await deviceInfoPlugin.iosInfo;
-        uid = iosInfo.identifierForVendor!;
-      }
-    } on PlatformException {
-      uid = 'Failed to get Id';
-      rethrow;
-    }
-    try {
-      http.Response response = await http.get(
-          // Uri.parse('http://dev.przm.kr/przm_api/get_song_search/json?id=WA0632182001001&uid=d99df16f4105e7bd7'));
-          Uri.parse('http://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
-      String jsonData = response.body;
-      Map<String, dynamic> map = jsonDecode(jsonData);
-
-      maps = map;
-      setState(() {});
-    } catch (e) {
-      rethrow;
-    }
+    // String? uid;
+    // var deviceInfoPlugin = DeviceInfoPlugin();
+    //
+    // try {
+    //   if (Platform.isAndroid) {
+    //     uid = await PlatformDeviceId.getDeviceId;
+    //     print('uid >> $uid');
+    //   } else if (Platform.isIOS) {
+    //     var iosInfo = await deviceInfoPlugin.iosInfo;
+    //     uid = iosInfo.identifierForVendor!;
+    //   }
+    // } on PlatformException {
+    //   uid = 'Failed to get Id';
+    //   rethrow;
+    // }
+    // try {
+    //   http.Response response = await http.get(
+    //       // Uri.parse('http://dev.przm.kr/przm_api/get_song_search/json?id=WA0632182001001&uid=d99df16f4105e7bd7'));
+    //       Uri.parse('http://${MyApp.search}/json?id=${widget.id}&uid=$uid'));
+    //   String jsonData = response.body;
+    //   Map<String, dynamic> map = jsonDecode(jsonData);
+    //
+    //   maps = map;
+    //   setState(() {});
+    // } catch (e) {
+    //   rethrow;
+    // }
     return 'done';
   }
 
@@ -79,103 +79,54 @@ class _Watch_Result extends State<Watch_Result> {
   }
 
   Future<bool> _onBackKey() async {
-    return await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return TabPage();
-        });
+    return true;
+    // return await showDialog(
+    //     context: context,
+    //     builder: (BuildContext context) {
+    //       return TabPage();
+    //     });
   }
 
   @override
   Widget build(BuildContext context) {
+    double c_height = MediaQuery.of(context).size.height;
+    double c_width = MediaQuery.of(context).size.width;
     final isArtistNull = artist == null; // Artist 의 정보가 없을경우
     // final isAlbumNull = maps['ALBUM'] == null; // Album 의 정보가 없을경우
 
     return WillPopScope(
-      onWillPop: _onBackKey,
-      child: FutureBuilder(
-          future: myFuture,
-          builder: (BuildContext context, AsyncSnapshot snapshot){
-            if(snapshot.hasData == false){
-              return Container(
-                // height: double.infinity,
-                //   width: double.infinity, //
-                  color: const Color.fromRGBO(244, 245, 247, 1),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        // margin: EdgeInsets.only(top: 30),
-                        //   height: c_height,
-                        // width: double.infn b inity,
-                          padding: EdgeInsets.only(bottom: 40),
-                          decoration: BoxDecoration(
-                              image: DecorationImage(
-                                  image: AssetImage('assets/BG_light.gif'),
-                                  colorFilter: _background,
-                                  // fit: BoxFit.fill,
-                                  alignment: const Alignment(0 , 3)
-                              )
-                          ),
-                          child: Center(
-                              child: Column(
-                                  children: <Widget>[
-                                    IconButton(
-                                        padding: EdgeInsets.only(top: 30),
-                                        icon:Image.asset('assets/_prizm.png'),
-                                        iconSize: 150,
-                                        onPressed: () async {
-                                        }
-                                    ),
-                                  ]
-                              )
-                          )
-                      ),
-                    ],
-                  )
-              );
-            }else if (snapshot.hasError){
-              return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                      'ERROR: ${snapshot.error}',
-                      style: TextStyle(fontSize: 15)
-                  )
-              );
-            }
-            else {
-              return Container(
-                alignment: Alignment.bottomCenter,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Container(
-                      child: Text(
-                        title,
-                        style: TextStyle(
-                          color: Colors.lightBlueAccent,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 20),
-                      child: Text(
-                        isArtistNull ? 'Various Artist' : artist,
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11
-                        ),
-                      ),
-                    ),
-                  ],
+        onWillPop: () async {
+          exit(0);
+        },
+      child: Container(
+        alignment: Alignment.bottomCenter,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: Colors.lightBlueAccent,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
                 ),
-              );
-            }
-          }
-      ),
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.only(bottom: 20),
+              child: Text(
+                isArtistNull ? 'Various Artist' : artist,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11
+                ),
+              ),
+            ),
+          ],
+        ),
+      )
     );
   }
 }

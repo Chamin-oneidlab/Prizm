@@ -41,6 +41,7 @@ class _Home extends State<Home> {
 
   final double _size = 220;
   final double watch_size = 150;
+  var isRunning = false;
 
   final VMIDC _vmidc = VMIDC();
   final _ctrl = StreamController<List>();
@@ -83,7 +84,7 @@ class _Home extends State<Home> {
 
   @override
   void initState() {
-    Future.delayed(const Duration(milliseconds: 1500), () {
+    Future.delayed(const Duration(milliseconds: 1000), () {
       logSetscreen();
       Permission.microphone.request();
       initConnectivity();
@@ -101,10 +102,13 @@ class _Home extends State<Home> {
               _id = 'error';
             }
             await _vmidc.stop();
-            setState(() {});
+            setState(() {
+              MyApp.isRunning == false;
+            });
           });
         }
       });
+
     });
     super.initState();
   }
@@ -126,68 +130,64 @@ class _Home extends State<Home> {
     final isTransParents = settingIcon.color == const Color(0x00000000);  // Setting Icon 색에 따라 leading Icon 투명화
     final isPad = c_width > 550;
     return MyApp.isWatch
-        ?Container(
-          // height: double.infinity,
-          //   width: double.infinity, //
-            color: const Color.fromRGBO(244, 245, 247, 1),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  // margin: EdgeInsets.only(top: 30),
-                  //   height: c_height,
-                  // width: double.infn b inity,
-                  //   padding: EdgeInsets.only(bottom: 40),
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage('assets/BG_light.gif'),
-                            colorFilter: _background,
-                            // fit: BoxFit.contain,
-                            alignment: const Alignment(0 , 2)
-                        )
-                    ),
-                    child: Center(
-                        child: Column(
-                            children: <Widget>[
-                              IconButton(
-                                  // padding: EdgeInsets.only(top: 25),
-                                  icon:Image.asset('assets/_prizm.png'),
-                                  iconSize: watch_size,
-                                  onPressed: () async {
-                                    var status = await Permission.microphone.status;
-                                    if (status == PermissionStatus.permanentlyDenied) {
-                                      PermissionToast();
-                                      Permission.microphone.request();
-                                      return;
-                                    } else if (status == PermissionStatus.denied) {
-                                      requestMicPermission(context);
-                                      Permission.microphone.request();
-                                      return;
-                                    }
-
-                                    if (await Permission.microphone.status.isGranted) {
-                                      _vmidc.start(); //인식 시작하는 부분 TODO: 주석처리풀기
-                                      await MyApp.analytics.logEvent(name: 'vmidc_start');
-                                      if(!mounted){
-                                        return;
-                                      }
-                                      setState(() {
-                                        // settingIcon = ImageIcon(Image.asset('assets/settings.png').image, color: Colors.transparent);
-                                        _background = const ColorFilter.mode(Colors.transparent, BlendMode.color);
-                                      });
-                                      if (_vmidc.isRunning() == true) {
-                                        _vmidc.stop();
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
-                                      }
-                                    }
-                                  }
-                              ),
-                            ]
-                        )
+        ?WillPopScope(
+          onWillPop: () async {
+            exit(0);
+          },
+          child: Stack(
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: c_height/2.5),
+                // width: double.infn b inity,
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                      scale: 2,
+                        image: AssetImage('assets/BG_light.gif'),
+                        colorFilter: _background,
+                        fit: BoxFit.none,
+                        alignment: const Alignment(0, -0.9),
                     )
                 ),
-              ],
-            )
+              ),
+              Center(
+                  child: IconButton(
+                    // padding: EdgeInsets.only(top: 25),
+                      icon:Image.asset('assets/_prizm.png'),
+                      iconSize: watch_size,
+                      onPressed: () async {
+
+                        var status = await Permission.microphone.status;
+                        if (status == PermissionStatus.permanentlyDenied) {
+                          PermissionToast();
+                          Permission.microphone.request();
+                          return;
+                        } else if (status == PermissionStatus.denied) {
+                          requestMicPermission(context);
+                          Permission.microphone.request();
+                          return;
+                        }
+
+                        if (await Permission.microphone.status.isGranted) {
+                          _vmidc.start(); //인식 시작하는 부분 TODO: 주석처리풀기
+                          MyApp.isRunning = true;
+                          await MyApp.analytics.logEvent(name: 'vmidc_start');
+                          if(!mounted){
+                            return;
+                          }
+                          setState(() {
+                            // settingIcon = ImageIcon(Image.asset('assets/settings.png').image, color: Colors.transparent);
+                            _background = const ColorFilter.mode(Colors.transparent, BlendMode.color);
+                          });
+                          if (_vmidc.isRunning() == true) {
+                            _vmidc.stop();
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
+                          }
+                        }
+                      }
+                  ),
+              )
+            ]
+          ),
         ):WillPopScope(
         onWillPop: () async {
           return _onBackKey();
@@ -282,6 +282,7 @@ class _Home extends State<Home> {
                                     // } else
                                     //   if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
                                     if (await Permission.microphone.status.isGranted) {
+                                      MyApp.isRunning = true;
                                       _vmidc.start();
                                       await MyApp.analytics.logEvent(name: 'vmidc_start');
                                       if(!mounted){
@@ -309,6 +310,7 @@ class _Home extends State<Home> {
                                         _background = const ColorFilter.mode(Colors.transparent, BlendMode.color);
                                       });
                                       if (_vmidc.isRunning() == true) {
+                                        MyApp.isRunning = true;
                                         _vmidc.stop();
                                         Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
                                       }
@@ -327,99 +329,102 @@ class _Home extends State<Home> {
   }
 
   Future<bool> _onBackKey() async {
-    print("run onBackKey Function");
-    if(_vmidc.isRunning()){
+    print("run onBackKey1 Function");
+    if (isRunning == true) {
       _vmidc.stop();
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
+      return false;
     }
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    double c_width = MediaQuery.of(context).size.width;
-    return await showDialog(
-      context: context,
-      barrierDismissible: false, //다이얼로그 바깥을 터치 시에 닫히도록 하는지 여부 (true: 닫힘, false: 닫히지않음)
-      builder: (BuildContext context) {
-        return Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            child: Container(
-              margin: const EdgeInsets.only(top: 20, bottom: 20),
-              width: c_width*0.8,
-              height: 155,
-              color: isDarkMode ? const Color.fromRGBO(66, 66, 66, 1) : Colors.white,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(
-                    height: 90,
-                    child: Center(
-                      child: Text(
-                        '종료하시겠습니까?',
-                        style: TextStyle(fontSize: 18),
+    else {
+      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+      return await showDialog(
+        context: context,
+        barrierDismissible: false, //다이얼로그 바깥을 터치 시에 닫히도록 하는지 여부 (true: 닫힘)
+        builder: (BuildContext context) {
+          double c_height = MediaQuery.of(context).size.height;
+          double c_width = MediaQuery.of(context).size.width;
+          return Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              child: Container(
+                height: c_height * 0.18,
+                width: c_width * 0.8,
+                margin: const EdgeInsets.only(top: 20, bottom: 20),
+                color: isDarkMode ? const Color.fromRGBO(66, 66, 66, 1) : Colors.white,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      height: c_height * 0.115,
+                      child: const Center(
+                        child: Text('종료 하시겠습니까?', style: TextStyle(fontSize: 18)),
                       ),
                     ),
-                  ),
-                  Container(
-                    decoration: BoxDecoration(
-                        border: Border(
-                            top: BorderSide(
-                                color: isDarkMode
-                                    ? const Color.fromRGBO(94, 94, 94, 1)
-                                    : Colors.black.withOpacity(0.1)
-                            )
-                        )
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: c_width*0.4,
-                          height: 78,
-                          child: Container(
-                              decoration: BoxDecoration(
-                                  color: isDarkMode ? const Color.fromRGBO(66, 66, 66, 1) : Colors.white,
-                                  border: Border(
-                                      right: BorderSide(
-                                          color: isDarkMode
-                                              ? const Color.fromRGBO(94, 94, 94, 1)
-                                              : Colors.black.withOpacity(0.1)
-                                      )
-                                  )
-                              ),
-                              child: TextButton(
-                                      onPressed: () {
-                                        Platform.isAndroid?SystemChannels.platform.invokeMethod('SystemNavigator.pop'):exit(0);
-                                      },
-                                      child: const Text(
-                                        '종료',
-                                        style: TextStyle(
-                                            fontSize: 20, color: Colors.red),
-                                      )
-                                  )
-                          ),
-                        ),
-                        Container(
-                            color: isDarkMode ? const Color.fromRGBO(66, 66, 66, 1) : Colors.white,
-                            width: c_width*0.4,
-                            height: 78,
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: Text('취소',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: isDarkMode ? Colors.white.withOpacity(0.8) : Colors.black.withOpacity(0.3),
+                    Container(
+                      decoration: BoxDecoration(
+                          border: Border(
+                              top: BorderSide(
+                                  color: isDarkMode
+                                      ? const Color.fromRGBO(94, 94, 94, 1)
+                                      : Colors.black.withOpacity(0.1))
+                          )
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: c_width * 0.4,
+                            height: c_height * 0.08,
+                            child: Container(
+                                decoration: BoxDecoration(
+                                    color: isDarkMode ? const Color.fromRGBO(66, 66, 66, 1) : Colors.white,
+                                    border: Border(
+                                        right: BorderSide(
+                                            color: isDarkMode
+                                                ? const Color.fromRGBO(94, 94, 94, 1)
+                                                : Colors.black.withOpacity(0.1)
+                                        )
+                                    )
                                 ),
-                              ),
-                            )
-                        ),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ));
-      },
-    );
+                                margin: const EdgeInsets.only(left: 20),
+                                child: TextButton(
+                                    onPressed: () {
+                                      exit(0);
+                                    },
+                                    child: const Text('종료',
+                                        style: TextStyle(fontSize: 20, color: Colors.red)
+                                    )
+                                )
+                            ),
+                          ),
+                          Container(
+                              margin: const EdgeInsets.only(right: 20),
+                              color: isDarkMode ? const Color.fromRGBO(66, 66, 66, 1) : Colors.white,
+                              width: c_width * 0.345,
+                              height: c_height * 0.08,
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: Text('취소',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: isDarkMode ? Colors.white.withOpacity(0.8) : Colors.black.withOpacity(0.3),
+                                  ),
+                                ),
+                              )
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              )
+          );
+        },
+      );
+    }
+    return false;
   }
 
   Future<bool> requestMicPermission(BuildContext context) async {

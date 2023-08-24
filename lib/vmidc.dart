@@ -97,14 +97,16 @@ class VMIDC {
     });
     return true;
   }
-  bool isRunning() { return _recorder.isRecording; }
+  bool isRunning() {
+    return _recorder.isRecording;
+  }
   Future<void> start() async {
     if (_recorder.isRecording)
       return;
     _id = null;
     _score = null;
     print('vmid.start()');
-    print(MyApp.vmidc);
+    // print(MyApp.vmidc);
     await _recorder.startRecorder(
       toStream: recCtrl.sink,
       codec: Codec.pcm16,
@@ -121,10 +123,11 @@ class VMIDC {
     if (!_recorder.isRecording) return false;
     if (_id != null && _score! >= 35) {  //35점 기준으로 하였으나 상황보고 조정
       // String id = _id!;
-      print("score");
+      // print("score");
       print(_score);
-      print('NOT FOUND');
-      HapticFeedback.vibrate(); //검색 완료시 진동 현재 Android만
+      // print('NOT FOUND');
+      HapticFeedback.vibrate();
+      //검색 완료시 진동 현재 Android만
       navigatorState.currentState?.push(  //얻어온 context 로 id값 가지고 push
           PageRouteBuilder(
             pageBuilder: (BuildContext context, Animation<double> animation1,
@@ -136,10 +139,10 @@ class VMIDC {
           ), //워치인지 아닌지 판별 후 Result Page를 다르게 보내야 함
       );
     } else {
-      print(_id);
-      print("score");
-      print(_score);
-      print('NOT FOUND');
+      // print(_id);
+      // print("score");
+      // print(_score);
+      // print('NOT FOUND');
       HapticFeedback.vibrate();
       navigatorState.currentState?.push(MaterialPageRoute(builder: (context) => Notfound_Bottom()));
       // navigatorState.currentState?.push(MaterialPageRoute(builder: (context) => TabPage()));
@@ -148,12 +151,15 @@ class VMIDC {
     await _recorder.stopRecorder();
     _wbuf.clear();
     _watch.stop();
+    MyApp.isRunning = false;
     return true;
   }
   Future<void> dispose() async {
     print('vmid.dispose()');
     _sock.add([4]); //finish
-    if (_recorder.isRecording) await stop();
+    if (_recorder.isRecording) {
+      MyApp.isRunning = false;
+      await stop();}
     _audioStream.cancel();
     _recorder.closeAudioSession();
     recCtrl.close();
@@ -163,14 +169,14 @@ class VMIDC {
     try {
       _sock = await Socket.connect(ip, port, timeout: Duration(seconds: 5));
     } on Exception catch (e) {
-      print(e.toString());
+      // print(e.toString());
       return false;
     }
     _sock.add(Uint8List.fromList('vmid333'.codeUnits));
     return true;
   }
   void _sendQuery(int len) {
-    print('_sendQuery($len) ${_watch.elapsedMilliseconds}ms');
+    // print('_sendQuery($len) ${_watch.elapsedMilliseconds}ms');
     var msg= Uint8List(1+1+4+len);
     msg[0]= 1; //search
     msg[1]= 1; //rank

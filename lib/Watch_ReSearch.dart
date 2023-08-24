@@ -13,49 +13,51 @@ class Watch_ReSurch extends StatefulWidget {
 class _Watch_ReSurchState extends State<Watch_ReSurch> {
   @override
   void initState(){
-    Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
+    MyApp.isRunning = false;
+    // Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
+    // Navigator.pop(context);
     super.initState();
   }
   @override
   Widget build(BuildContext context) {
-    return Container(child: Text(""),);
-    // return Container(
-    //     child: Column(
-    //       mainAxisAlignment: MainAxisAlignment.end,
-    //       children: [
-    //         GestureDetector(
-    //           onTap: () {
-    //             Navigator.push(context,
-    //                 MaterialPageRoute(builder: (context) => const TabPage()));
-    //           },
-    //           child: Container(
-    //             margin: const EdgeInsets.only(bottom: 25),
-    //             child: Stack(
-    //               children: [
-    //                 Row(
-    //                   mainAxisAlignment: MainAxisAlignment.center,
-    //                   children: [
-    //                     Container(
-    //                       margin: const EdgeInsets.only(right: 10),
-    //                       child: Image.asset(
-    //                           'assets/splash_image/_splash_logo.png',
-    //                           width: 20),
-    //                     ),
-    //                     const Text(
-    //                       '다시 검색하기',
-    //                       style: TextStyle(
-    //                         color: Colors.lightBlueAccent,
-    //                         fontWeight: FontWeight.bold,
-    //                         fontSize: 13,
-    //                       ),
-    //                     ),
-    //                   ],
-    //                 ),
-    //               ],
-    //             ),
-    //           ),
-    //         ),
-    //       ],
-    //     ));
+    // return Container(child: Text(""),);
+    return Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const TabPage()));
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 25),
+                child: Stack(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(right: 10),
+                          child: Image.asset(
+                              'assets/splash_image/_splash_logo.png',
+                              width: 20),
+                        ),
+                        const Text(
+                          '다시 검색하기',
+                          style: TextStyle(
+                            color: Colors.lightBlueAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ));
   }
 }
