@@ -133,17 +133,13 @@ class VMIDC {
           PageRouteBuilder(
             pageBuilder: (BuildContext context, Animation<double> animation1,
                 Animation<double> animation2) {
-              return MyApp.isWatch?Watch_Result_Swipe(id: _id!):Result(id: _id!);
+              return Watch_Result_Swipe(id: _id!);
             },
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
-          ), //워치인지 아닌지 판별 후 Result Page를 다르게 보내야 함
+          ),
       );
     } else {
-      // print(_id);
-      // print("score");
-      // print(_score);
-      // print('NOT FOUND');
       HapticFeedback.vibrate();
       navigatorState.currentState?.push(MaterialPageRoute(builder: (context) => Notfound_Bottom()));
       // navigatorState.currentState?.push(MaterialPageRoute(builder: (context) => TabPage()));

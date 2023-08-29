@@ -75,7 +75,6 @@ class MyApp extends StatelessWidget {
   static var ranks;
   static var privacy;
   static var terms;
-  static var isWatch;
   static var vmidc;
   static var isRunning;
   static var isReady = false;
@@ -172,9 +171,6 @@ class _TabPageState extends State<TabPage> {
 
       deviceData = androidDevice.displayMetrics.widthPx; //화면 widthPx
       deviceDataHeight = androidDevice.displayMetrics.heightPx; //double로 받아옴
-      deviceDataHeight<1500? MyApp.isWatch = true:MyApp.isWatch = false;
-      print("ISWATCH HERE :::");
-      print(MyApp.isWatch);
     } else if (Platform.isIOS) {
       var iosInfo = await deviceInfoPlugin.iosInfo;
       deviceIdentifier = iosInfo.identifierForVendor!;
@@ -310,7 +306,7 @@ class _TabPageState extends State<TabPage> {
   Widget buildPageView() {
     return PageView(
       controller: pageController,
-      children: MyApp.isWatch?<Widget>[_pages[1]]:<Widget>[_pages[0], _pages[1], _pages[2]],
+      children: <Widget>[_pages[0], _pages[1], _pages[2]],
     );
   }
 
@@ -333,52 +329,13 @@ class _TabPageState extends State<TabPage> {
     SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
-    return MyApp.isWatch?WillPopScope(
+    return WillPopScope(
       onWillPop: () async {
         exit(0);
       },
       child: Scaffold(
         body: buildPageView(),
       ),
-    ):WillPopScope(
-        onWillPop: () async{
-          if (_selectedIndex == 1 && pageController.offset == _deviceData / 3) {
-            return _onBackKey();//디바이스 widthPx / 3 의 값이 page offset 값과 같고 index 1번일떄 종료 dialog
-          } else {
-            return _backToHome();
-          }
-          return false;
-        },
-        child: Scaffold(
-          body: buildPageView(),
-          bottomNavigationBar: StyleProvider(
-              style: isDarkMode ? Style_dark() : Style(),
-              child: MyApp.isWatch?SizedBox.shrink():
-              ConvexAppBar(
-                items: [
-                  TabItem(
-                    icon: Image.asset('assets/history.png'),
-                    title: '히스토리',
-                  ),
-                  TabItem(
-                    icon: isDarkMode
-                        ? Image.asset('assets/search_dark.png')
-                        : Image.asset('assets/search.png'),
-                  ),
-                  TabItem(
-                    title: '차트',
-                    icon: Image.asset('assets/chart.png', width: 50),
-                  ),
-                ],
-                onTap: pageChanged,
-                height: 80,
-                style: TabStyle.fixedCircle,
-                curveSize: 100,
-                elevation: 2.0,
-                backgroundColor: isDarkMode ? Colors.black : Colors.white,
-              )
-          ),
-        )
     );
   }
 

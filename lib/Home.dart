@@ -130,8 +130,7 @@ class _Home extends State<Home> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTransParents = settingIcon.color == const Color(0x00000000);  // Setting Icon 색에 따라 leading Icon 투명화
     final isPad = c_width > 550;
-    return MyApp.isWatch
-        ?WillPopScope(
+    return WillPopScope(
           onWillPop: () async {
             exit(0);
           },
@@ -189,145 +188,7 @@ class _Home extends State<Home> {
               )
             ]
           ),
-        ):WillPopScope(
-        onWillPop: () async {
-          return _onBackKey();
-        },
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor: isDarkMode ? const Color.fromRGBO(47, 47, 47, 1) : const Color.fromRGBO(244, 245, 247, 1),
-            centerTitle: true,
-            toolbarHeight: 90,
-            elevation: 0.0,
-            title: Image.asset(isDarkMode ? 'assets/logo_dark.png' : 'assets/logo_light.png', height: 25),
-            leading: IconButton(
-              icon: Image.asset('assets/x_icon.png',
-                  width: 20,
-                  color: isTransParents ? isDarkMode ? Colors.white : Colors.grey : Colors.transparent
-              ),
-              splashColor: Colors.transparent,
-              onPressed: () {
-                _vmidc.stop();
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
-              },
-            ),
-            actions: [
-              IconButton(
-                icon: settingIcon,
-                splashColor: Colors.transparent,
-                visualDensity: const VisualDensity(horizontal: 4.0),
-                color: isDarkMode ? Colors.white : Colors.black,
-                onPressed: () {
-                  isTransParents
-                      ? null    // Setting Icon 이 투명일때 클릭해도 화면이동 x
-                      : Navigator.push(context, MaterialPageRoute(builder: (context) => const Settings()));
-                }
-              )
-            ]
-          ),
-          body: Container(
-              width: double.infinity, //
-              color: isDarkMode ? const Color.fromRGBO(47, 47, 47, 1) : const Color.fromRGBO(244, 245, 247, 1),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                      height: c_height * 0.55,
-                      padding: const EdgeInsets.only(bottom: 50),
-                      decoration: isPad
-                          ? BoxDecoration(
-                              image: DecorationImage(
-                                  image: AssetImage(isDarkMode ? ('assets/BG_dark.gif') : ('assets/BG_light.gif')),
-                                  alignment: const Alignment(0, -2),
-                                  fit: BoxFit.cover,
-                                  colorFilter: _background
-                              ),
-                            )
-                          : BoxDecoration(
-                              image: DecorationImage(
-                                  image: AssetImage(isDarkMode ? ('assets/BG_dark.gif') : ('assets/BG_light.gif')),
-                                  alignment: const Alignment(0, 1),
-                                  colorFilter: _background
-                              )
-                        ),
-                      child: Center(
-                          child: Column(
-                              children: <Widget>[
-                                Center(
-                                    child: Container(
-                                  margin: const EdgeInsets.only(bottom: 20),
-                                  child: RichText(
-                                      text: isDarkMode ? _textSpan_dark : _textSpan_light
-                                    ),
-                                  )
-                                ),
-                                IconButton(
-                                  icon: isDarkMode ? Image.asset('assets/_prizm_dark.png') : Image.asset('assets/_prizm.png'),
-                                  padding: const EdgeInsets.only(bottom: 30),
-                                  iconSize: _size,
-                                  onPressed: () async {
-                                    if(!MyApp.isReady) return;
-                                    var status = await Permission.microphone.status;
-                                    if (status == PermissionStatus.permanentlyDenied) {
-                                      PermissionToast();
-                                      Permission.microphone.request();
-                                      return;
-                                    } else if (status == PermissionStatus.denied) {
-                                      requestMicPermission(context);
-                                      Permission.microphone.request();
-                                      return;
-                                    }
-
-                                    // if (_connectionStatus.endsWith('none') == true) {
-                                    //   NetworkToast();
-                                    //   return;
-                                    // } else
-                                    //   if (await Permission.microphone.status.isGranted && _connectionStatus.endsWith('none') == false) {
-                                    if (await Permission.microphone.status.isGranted) {
-                                      MyApp.isRunning = true;
-                                      _vmidc.start();
-                                      await MyApp.analytics.logEvent(name: 'vmidc_start');
-                                      if(!mounted){
-                                        return;
-                                      }
-                                      setState(() {
-                                        settingIcon = ImageIcon(Image.asset('assets/settings.png').image, color: Colors.transparent);
-                                        isDarkMode
-                                            ? _textSpan_dark = const TextSpan(
-                                                text: '노래 분석중',
-                                                style: TextStyle(
-                                                    color: Color.fromRGBO(43, 226, 193, 1),
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.bold
-                                                ),
-                                              )
-                                            : _textSpan_light = const TextSpan(
-                                                text: '노래 분석중',
-                                                style: TextStyle(
-                                                    color: Color.fromRGBO(43, 226, 193, 1),
-                                                    fontSize: 17,
-                                                    fontWeight: FontWeight.bold
-                                                ),
-                                              );
-                                        _background = const ColorFilter.mode(Colors.transparent, BlendMode.color);
-                                      });
-                                      if (_vmidc.isRunning() == true) {
-                                        MyApp.isRunning = true;
-                                        _vmidc.stop();
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
-                                      }
-                                    }
-                                  }
-                               ),
-                          ]
-                        )
-                     )
-                  ),
-                ],
-              )
-          ),
-        )
-    );
+        );
   }
 
   Future<bool> _onBackKey() async {

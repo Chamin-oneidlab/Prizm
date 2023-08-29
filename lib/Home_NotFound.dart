@@ -73,12 +73,7 @@ class _NotFound extends State<NotFound> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     double c_height = MediaQuery.of(context).size.height;
     double c_width = MediaQuery.of(context).size.width;
-    if (_connectionStatus.endsWith('none') == true&&!MyApp.isWatch) {
-      NetworkToast();
-    }
-    return MyApp.isWatch?Container(
-      // height: double.infinity,
-      //   width: double.infinity, //
+    return Container(
         color: const Color.fromRGBO(244, 245, 247, 1),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -110,70 +105,6 @@ class _NotFound extends State<NotFound> {
               ),
             ),
           ],
-        )
-    ):WillPopScope(
-        onWillPop: () async {
-          return _onBackKey();
-        },
-        child: Scaffold(
-            appBar: AppBar(
-              backgroundColor: isDarkMode
-                  ? const Color.fromRGBO(47, 47, 47, 1)
-                  : const Color.fromRGBO(244, 245, 247, 1),
-              elevation: 0.0,
-              centerTitle: true,
-              toolbarHeight: 90,
-              title: Image.asset(
-                isDarkMode ? 'assets/logo_dark.png' : 'assets/logo_light.png',
-                height: 25,
-              ),
-              leading: IconButton(
-                  icon: Image.asset(
-                    'assets/x_icon.png',
-                    width: 20,
-                    color: isDarkMode ? Colors.white : Colors.grey,
-                  ),
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
-                  }),
-            ),
-            backgroundColor: isDarkMode
-                ? const Color.fromRGBO(47, 47, 47, 1)
-                : const Color.fromRGBO(244, 245, 247, 1),
-            body: Container(
-                width: c_width,
-                color: isDarkMode
-                    ? const Color.fromRGBO(47, 47, 47, 1)
-                    : const Color.fromRGBO(244, 245, 247, 1),
-                child:
-                Column(mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                          height: c_height * 0.59,
-                          padding: const EdgeInsets.only(bottom: 50),
-                          child: Center(
-                              child: Column(children: <Widget>[
-                                Center(
-                                    child: Container(
-                                        padding: const EdgeInsets.only(bottom: 20),
-                                        child: isDarkMode ? _textColumn_dark : _textColumn_light
-                                    )
-                                ),
-                                IconButton(
-                                  icon: isDarkMode
-                                      ? Image.asset('assets/_prizm_dark.png')
-                                      : Image.asset('assets/_prizm.png'),
-                                  padding: const EdgeInsets.only(bottom: 30),
-                                  iconSize: 220,
-                                  onPressed: () {
-                                    _vmidc.stop();
-                                    Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
-                                  },
-                                )
-                              ]))
-                      )
-                    ])
-            )
         )
     );
   }
