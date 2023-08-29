@@ -4,16 +4,6 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 
-/// Default [FirebaseOptions] for use with your Firebase apps.
-///
-/// Example:
-/// ```dart
-/// import 'firebase_options.dart';
-/// // ...
-/// await Firebase.initializeApp(
-///   options: DefaultFirebaseOptions.currentPlatform,
-/// );
-/// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -57,15 +47,4 @@ class DefaultFirebaseOptions {
     databaseURL: 'https://prizm-oneidlab-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'prizm-oneidlab.appspot.com',
   );
-
-  // static const FirebaseOptions ios = FirebaseOptions(
-  //   apiKey: 'AIzaSyBjoFdSmbSDfgHlXPQgAqE1pWMoUeaoFz0',
-  //   appId: '1:296859940615:ios:fd469208c77d6b7d4bb7a2',
-  //   messagingSenderId: '296859940615',
-  //   projectId: 'prizm-oneidlab',
-  //   databaseURL: 'https://prizm-oneidlab-default-rtdb.asia-southeast1.firebasedatabase.app',
-  //   storageBucket: 'prizm-oneidlab.appspot.com',
-  //   iosClientId: '296859940615-b9mh6kgf4ah53h38itc4pm2l78n0ttn7.apps.googleusercontent.com',
-  //   iosBundleId: 'com.ios.prizm',
-  // );
 }

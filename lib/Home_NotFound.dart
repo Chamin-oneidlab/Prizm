@@ -1,6 +1,4 @@
 import 'dart:async';
-//1544-7556
-import 'package:Prizm/Watch_ReSearch.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:Prizm/Home.dart';
 import 'package:Prizm/vmidc.dart';
@@ -73,45 +71,10 @@ class _NotFound extends State<NotFound> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     double c_height = MediaQuery.of(context).size.height;
     double c_width = MediaQuery.of(context).size.width;
-    if (_connectionStatus.endsWith('none') == true&&!MyApp.isWatch) {
+    if (_connectionStatus.endsWith('none') == true) {
       NetworkToast();
     }
-    return MyApp.isWatch?Container(
-      // height: double.infinity,
-      //   width: double.infinity, //
-        color: const Color.fromRGBO(244, 245, 247, 1),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            isDarkMode?_textColumn_dark_w:_textColumn_light_w,
-            IconButton(
-                icon:Image.asset('assets/_prizm.png'),
-                iconSize: 100,
-                onPressed: () async {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
-                }
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
-              },
-              style: TextButton.styleFrom(
-                minimumSize: Size.zero,
-                padding: EdgeInsets.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: const Text(
-                '다시 검색하기',
-                style: TextStyle(
-                  color: Colors.lightBlueAccent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 11,
-                ),
-              ),
-            ),
-          ],
-        )
-    ):WillPopScope(
+    return WillPopScope(
         onWillPop: () async {
           return _onBackKey();
         },

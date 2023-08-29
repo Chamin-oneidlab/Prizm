@@ -5,8 +5,6 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:Prizm/Watch_Search_Result.dart';
-import 'package:Prizm/Watch_Swipe_Controller.dart';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -133,7 +131,7 @@ class VMIDC {
           PageRouteBuilder(
             pageBuilder: (BuildContext context, Animation<double> animation1,
                 Animation<double> animation2) {
-              return MyApp.isWatch?Watch_Result_Swipe(id: _id!):Result(id: _id!);
+              return Result(id: _id!);
             },
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,

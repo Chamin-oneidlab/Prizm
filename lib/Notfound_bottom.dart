@@ -49,7 +49,7 @@ class _BottomState extends State<Notfound_Bottom> {
   Widget buildPageView() {
     return PageView(
       controller: pageController,
-      children: MyApp.isWatch?[NotFound()]:[_pages[0], _pages[1], _pages[2]],
+      children: [_pages[0], _pages[1], _pages[2]],
     );
   }
 
@@ -57,7 +57,7 @@ class _BottomState extends State<Notfound_Bottom> {
     setState(() {
       _selectedIndex = index;
       pageController.animateToPage(index, duration: const Duration(milliseconds: 500), curve: Curves.ease);
-      pageController.jumpToPage(MyApp.isWatch?0:_selectedIndex);
+      pageController.jumpToPage(_selectedIndex);
 
     });
   }
@@ -72,9 +72,7 @@ class _BottomState extends State<Notfound_Bottom> {
           SystemUiOverlay.bottom
         ]
     );
-    return MyApp.isWatch?Scaffold(
-          body: buildPageView(),
-    ):WillPopScope(
+    return WillPopScope(
         onWillPop: (){
           if(_selectedIndex == 1 && pageController.offset == _deviceData /3) {
             return _onBackKey();

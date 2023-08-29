@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity/connectivity.dart';
-import 'Watch_Swipe_Controller.dart';
 import 'vmidc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -130,66 +129,7 @@ class _Home extends State<Home> {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final isTransParents = settingIcon.color == const Color(0x00000000);  // Setting Icon 색에 따라 leading Icon 투명화
     final isPad = c_width > 550;
-    return MyApp.isWatch
-        ?WillPopScope(
-          onWillPop: () async {
-            exit(0);
-          },
-          child: Stack(
-            children: [
-              Container(
-                margin: EdgeInsets.only(top: c_height/2.5),
-                // width: double.infn b inity,
-                decoration: BoxDecoration(
-                    image: DecorationImage(
-                      scale: 2,
-                        image: AssetImage('assets/BG_light.gif'),
-                        colorFilter: _background,
-                        fit: BoxFit.none,
-                        alignment: const Alignment(0, -0.9),
-                    )
-                ),
-              ),
-              Center(
-                  child: IconButton(
-                    // padding: EdgeInsets.only(top: 25),
-                      icon:Image.asset('assets/_prizm.png'),
-                      iconSize: watch_size,
-                      onPressed: () async {
-
-                        var status = await Permission.microphone.status;
-                        if (status == PermissionStatus.permanentlyDenied) {
-                          PermissionToast();
-                          Permission.microphone.request();
-                          return;
-                        } else if (status == PermissionStatus.denied) {
-                          requestMicPermission(context);
-                          Permission.microphone.request();
-                          return;
-                        }
-
-                        if (await Permission.microphone.status.isGranted) {
-                          _vmidc.start(); //인식 시작하는 부분 TODO: 주석처리풀기
-                          MyApp.isRunning = true;
-                          await MyApp.analytics.logEvent(name: 'vmidc_start');
-                          if(!mounted){
-                            return;
-                          }
-                          setState(() {
-                            // settingIcon = ImageIcon(Image.asset('assets/settings.png').image, color: Colors.transparent);
-                            _background = const ColorFilter.mode(Colors.transparent, BlendMode.color);
-                          });
-                          if (_vmidc.isRunning() == true) {
-                            _vmidc.stop();
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
-                          }
-                        }
-                      }
-                  ),
-              )
-            ]
-          ),
-        ):WillPopScope(
+    return WillPopScope(
         onWillPop: () async {
           return _onBackKey();
         },
