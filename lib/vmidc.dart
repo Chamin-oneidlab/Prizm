@@ -95,6 +95,7 @@ class VMIDC {
         }
       }
     });
+    MyApp.isReady = true;
     return true;
   }
   bool isRunning() {

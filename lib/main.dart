@@ -78,6 +78,7 @@ class MyApp extends StatelessWidget {
   static var isWatch;
   static var vmidc;
   static var isRunning;
+  static var isReady = false;
 
   @override
   Widget build(BuildContext context) {

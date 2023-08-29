@@ -84,7 +84,8 @@ class _Home extends State<Home> {
 
   @override
   void initState() {
-    Future.delayed(const Duration(milliseconds: 1000), () {
+    MyApp.isReady = false;
+    Future.delayed(const Duration(milliseconds: 2000), () {
       logSetscreen();
       Permission.microphone.request();
       initConnectivity();
@@ -265,6 +266,7 @@ class _Home extends State<Home> {
                                   padding: const EdgeInsets.only(bottom: 30),
                                   iconSize: _size,
                                   onPressed: () async {
+                                    if(!MyApp.isReady) return;
                                     var status = await Permission.microphone.status;
                                     if (status == PermissionStatus.permanentlyDenied) {
                                       PermissionToast();

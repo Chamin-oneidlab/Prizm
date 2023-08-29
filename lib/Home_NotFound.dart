@@ -84,25 +84,28 @@ class _NotFound extends State<NotFound> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             isDarkMode?_textColumn_dark_w:_textColumn_light_w,
-            Center(
-              child: IconButton(
-                  icon:Image.asset('assets/_prizm.png'),
-                  iconSize: 110,
-                  onPressed: () async {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
-                  }
-              ),
+            IconButton(
+                icon:Image.asset('assets/_prizm.png'),
+                iconSize: 100,
+                onPressed: () async {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
+                }
             ),
             TextButton(
               onPressed: () async {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => TabPage()));
               },
+              style: TextButton.styleFrom(
+                minimumSize: Size.zero,
+                padding: EdgeInsets.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               child: const Text(
                 '다시 검색하기',
                 style: TextStyle(
                   color: Colors.lightBlueAccent,
                   fontWeight: FontWeight.bold,
-                  fontSize: 13,
+                  fontSize: 11,
                 ),
               ),
             ),
