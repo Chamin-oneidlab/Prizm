@@ -263,9 +263,9 @@ class _TabPageState extends State<TabPage> {
 
 /*-----------------------------------------------------------------------------------------*/
 
-  final List _pages = [const History(), const Home(), const Chart()]; // Default
-  // final List _pages = [Home(),const Watch_Result_Swipe(id: ''), Chart()];/ // Watch_Result로 바로 갈 때 사용 (테스트)
-  // final List _pages = [const Result(id: '',), Home(), Chart()];   // emulator에서 result화면 수정시 History 대신 Result 넣고 수정 (테스트)
+  final List _pages = [const Home()]; // Default
+  // final List _pages = [Home(),const Watch_Result_Swipe(id: 'KD0025784001001'), Chart()]; // Watch_Result로 바로 갈 때 사용 (테스트)
+  // final List _pages = [const Watch_Result_Swipe(id: 'KD0025784001001')];   // emulator에서 result화면 수정시 History 대신 Result 넣고 수정 (테스트)
 
 
   List url = [];
@@ -306,7 +306,8 @@ class _TabPageState extends State<TabPage> {
   Widget buildPageView() {
     return PageView(
       controller: pageController,
-      children: <Widget>[_pages[0], _pages[1], _pages[2]],
+      children: <Widget>[_pages[0]],
+      // children: <Widget>[_pages[1]], //result 바로 갈때 사용
     );
   }
 
@@ -342,8 +343,6 @@ class _TabPageState extends State<TabPage> {
 /* =======================================================*/
 
   Future<bool> _onBackKey() async {
-    print("run onBackKey2 Function");
-    print("VMIDC IS RUNNING 2>>${_vmidc.isRunning()}");
     if (MyApp.isRunning == true) {
       _vmidc.stop();
       Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));

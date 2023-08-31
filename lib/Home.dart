@@ -155,7 +155,7 @@ class _Home extends State<Home> {
                       icon:Image.asset('assets/_prizm.png'),
                       iconSize: watch_size,
                       onPressed: () async {
-
+                        if(!MyApp.isReady) return;
                         var status = await Permission.microphone.status;
                         if (status == PermissionStatus.permanentlyDenied) {
                           PermissionToast();
