@@ -29,7 +29,6 @@ class Home extends StatefulWidget {
 }
 
 class _Home extends State<Home> {
-
   Future<void> logSetscreen() async {
     await MyApp.analytics.setCurrentScreen(screenName: 'Home');
   }

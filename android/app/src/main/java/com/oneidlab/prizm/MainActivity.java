@@ -1,0 +1,7 @@
+package com.oneidlab.prizmAnd;
+
+import io.flutter.embedding.android.FlutterActivity;
+
+public class MainActivity extends FlutterActivity{
+
+}
