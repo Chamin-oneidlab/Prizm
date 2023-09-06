@@ -67,3 +67,4 @@ android/gradle/wrapper/gradle-wrapper.jar
 build/last_build_run.json
 firebase/firebase-tools-instant-win.exe
 .dart_tool/dartpad/web_plugin_registrant.dart
+.idea/
