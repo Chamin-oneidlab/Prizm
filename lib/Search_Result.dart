@@ -175,6 +175,7 @@ class _Result extends State<Result> {
       print('fail to make FlSpotData');
       print(e);
     }
+    HapticFeedback.vibrate();
     return 'done';
   }
 
@@ -302,7 +303,7 @@ class _Result extends State<Result> {
                                       image: AssetImage(isDarkMode
                                           ? 'assets/BG_dark.gif'
                                           : 'assets/BG_light.gif'),
-                                      alignment: const Alignment(0, -1.8),
+                                      alignment: const Alignment(0, -2),
                                       fit: BoxFit.cover,
                                       colorFilter: _background))
                                   : BoxDecoration(
@@ -895,11 +896,12 @@ class _Result extends State<Result> {
   }
 
   Future<bool> _onBackKey() async {
-    return await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return TabPage();
-        });
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TabPage()),
+    );
+    return false;
   }
 
   void _onShare(BuildContext context) async {

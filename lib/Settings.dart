@@ -588,10 +588,7 @@ class _Settings extends State<Settings> {
   }
 
   Future<bool> _onBackKey() async {
-    return await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return const TabPage();
-        });
+    Navigator.pop(context);
+    return false;
   }
 }

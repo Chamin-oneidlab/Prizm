@@ -12,6 +12,7 @@ import 'package:convex_bottom_bar/convex_bottom_bar.dart';
 import 'package:Prizm/vmidc.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_color_generator/material_color_generator.dart';
@@ -134,7 +135,7 @@ class _TabPageState extends State<TabPage> {
     await remoteConfig.fetchAndActivate();  // Fetch
 
     String appVersion = remoteConfig.getString('appVersion'); // 변수명 가져오기
-    
+
     /**
      *  appVersion = remoteConfig 에서 변경가능한 값
      *  packageVersion = 현재 기기에 설치되어있는 패키지의 버전
@@ -144,17 +145,17 @@ class _TabPageState extends State<TabPage> {
      *
      *  값 변경 후 꼭 '게시' 를 눌러야 적용됨
      *  필수업데이트가 필요할때 배포한 버전을 값에 넣고 게시
-     *  
+     *
      *  평소에는 인앱 기본값 으로 설정해놔야 걸리지 않고 넘어감
      */
 
-    MyApp.appVersion = appVersion; //TODO:: 이거 풀어야함
+    MyApp.appVersion = appVersion;
     if (appVersion != packageVersion) {
       showDefaultDialog();
     }
 
   }
-  
+
   Future<void> initPlatformState() async {
     String? deviceId;  //기기 uid
     try {
@@ -164,26 +165,27 @@ class _TabPageState extends State<TabPage> {
       rethrow;
     }
     if (!mounted) return;
-    if (Platform.isAndroid) {
-      AndroidDeviceInfo androidDevice = await deviceInfoPlugin.androidInfo;
+    AndroidDeviceInfo androidDevice = await deviceInfoPlugin.androidInfo;
+    deviceData = androidDevice.displayMetrics.widthPx; //화면 widthPx
+    deviceDataHeight = androidDevice.displayMetrics.heightPx;
 
-      deviceData = androidDevice.displayMetrics.widthPx; //화면 widthPx
-      deviceDataHeight = androidDevice.displayMetrics.heightPx; //double로 받아옴
-    } else if (Platform.isIOS) {
-      var iosInfo = await deviceInfoPlugin.iosInfo;
-      deviceIdentifier = iosInfo.identifierForVendor!;
-    }
     setState(() {
       _deviceData = deviceData;
     });
   }
+  Future<void> initTheme() async{
+    SharedPreferences _prefs = await SharedPreferences.getInstance();
+    if(_prefs.getString("theme")==null) _prefs.setString("theme", "light");
+    MyApp.themeNotifier.value = _prefs.getString("theme")=="dark"?ThemeMode.dark:ThemeMode.light;
+  }
+
 
   void showDefaultDialog() {
     showDialog(
         context: context,
         barrierDismissible: false,  // Dialog 외부 터치 비활성화
         builder: (BuildContext context) {
-          final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+          final isDarkMode = true;
           double c_height = MediaQuery.of(context).size.height;
           double c_width = MediaQuery.of(context).size.width;
           return Dialog(
@@ -228,9 +230,9 @@ class _TabPageState extends State<TabPage> {
                                   Uri _url = Uri.parse('');
                                   if (Platform.isAndroid) {
                                     updateToast();
-                                    _url = Uri.parse(/* 플레이스토어 주소 입력 */'');
+                                    _url = Uri.parse(/* 플레이스토어 주소 입력 */''); //TODO: 플레이스토어 주소 입력
                                   } else if (Platform.isIOS) {
-                                    _url = Uri.parse(/* 앱스토어 주소 입력 */'');
+                                    _url = Uri.parse(/* 앱스토어 주소 입력 */''); //TODO: 앱스토어 주소 입력
                                     updateToast();
                                   }
                                   try {
@@ -281,7 +283,6 @@ class _TabPageState extends State<TabPage> {
       MyApp.privacy = url['privacy'];
       MyApp.terms = url['terms'];
       MyApp.vmidc = url['vmidc'];
-      print(MyApp.vmidc);
     } catch (e) {
       rethrow;
     }
@@ -290,6 +291,7 @@ class _TabPageState extends State<TabPage> {
 
   @override
   void initState() {
+    initTheme();
     initPlatformState();
     remoteconfig();
     fetchData();
@@ -323,12 +325,14 @@ class _TabPageState extends State<TabPage> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setEnabledSystemUIOverlays([]);
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     SystemChrome.setEnabledSystemUIMode(
         SystemUiMode.manual,
         overlays: [SystemUiOverlay.bottom]);
     return WillPopScope(
         onWillPop: () async{
+          print("MAIN");
           if (_selectedIndex == 1 && pageController.offset == _deviceData / 3) {
             return _onBackKey();//디바이스 widthPx / 3 의 값이 page offset 값과 같고 index 1번일떄 종료 dialog
           } else {
@@ -371,15 +375,15 @@ class _TabPageState extends State<TabPage> {
 /* =======================================================*/
 
   Future<bool> _onBackKey() async {
-    print("run onBackKey2 Function");
-    print("VMIDC IS RUNNING 2>>${_vmidc.isRunning()}");
-    if (MyApp.isRunning == true) {
+    if (_vmidc.isRunning() == true) {
+      MyApp.isRunning = true;
       _vmidc.stop();
       Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
-      return false;
+      return true;
     }
     else{
-      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+      // final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+      final isDarkMode = true;
       return await showDialog(
         context: context,
         barrierDismissible: false, //다이얼로그 바깥을 터치 시에 닫히도록 하는지 여부 (true: 닫힘)
@@ -467,15 +471,11 @@ class _TabPageState extends State<TabPage> {
         },
       );
     }
-    return false;
   }
 
   Future<bool> _backToHome() async {
-    return await showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return const TabPage();
-        });
+    pageChanged(1);
+    return false;
   }
 }
 

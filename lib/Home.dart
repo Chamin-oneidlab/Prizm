@@ -130,6 +130,7 @@ class _Home extends State<Home> {
     final isPad = c_width > 550;
     return WillPopScope(
         onWillPop: () async {
+          print("HOME");
           return _onBackKey();
         },
         child: Scaffold(
@@ -270,11 +271,11 @@ class _Home extends State<Home> {
   }
 
   Future<bool> _onBackKey() async {
-    print("run onBackKey1 Function");
-    if (isRunning == true) {
+    if (_vmidc.isRunning() == true) {
+      MyApp.isRunning = true;
       _vmidc.stop();
       Navigator.push(context, MaterialPageRoute(builder: (context) => const TabPage()));
-      return false;
+      return true;
     }
     else {
       final isDarkMode = Theme.of(context).brightness == Brightness.dark;
